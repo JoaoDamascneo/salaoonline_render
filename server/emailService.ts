@@ -228,9 +228,7 @@ export async function sendPasswordResetEmail(
   establishmentName?: string
 ): Promise<boolean> {
   // Detectar URL do ambiente automaticamente
-  const baseUrl = process.env.REPL_OWNER 
-    ? process.env.BASE_URL || 'http://localhost:5000'
-    : process.env.FRONTEND_URL || 'http://localhost:5000';
+  const baseUrl = process.env.BASE_URL || process.env.FRONTEND_URL || 'https://salaoonline-render.onrender.com';
   
   const resetUrl = `${baseUrl}/redefinir-senha?token=${resetToken}`;
   const subject = '🔐 Redefinir Senha - Salão Online';
