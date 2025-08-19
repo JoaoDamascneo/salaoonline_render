@@ -12,6 +12,7 @@ Ao criar o serviço no Render, adicione estas variáveis exatas na seção **Env
 
 ```bash
 # Database (Neon)
+<<<<<<< HEAD
 DATABASE_URL=postgresql://username:password@host:port/database
 
 # Session
@@ -25,20 +26,47 @@ STRIPE_WEBHOOK_SECRET_LIVE=whsec_seu_webhook_secret_aqui
 # Stripe (Desenvolvimento - opcional)
 STRIPE_SECRET_KEY=sk_test_sua_chave_aqui
 VITE_STRIPE_PUBLIC_KEY=pk_live_sua_chave_aqui
+=======
+DATABASE_URL=postgresql://neondb_owner:npg_7WzVcIJfq6OP@ep-fragrant-king-a6na8g6b.us-west-2.aws.neon.tech/neondb?sslmode=require
+
+# Session
+SESSION_SECRET=YD6d3de27uXJ70P+Z5GcQw8gAlo0bUQP1dg2r/6ACkRp8G/JdTHAyzN+8dxB1PKLAJHox0MpHIDVhrTTSdxazw==
+
+# Stripe (Produção)
+STRIPE_SECRET_KEY_LIVE=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
+STRIPE_PUBLISHABLE_KEY_LIVE=pk_live_51OFQO3Ll2BG7oZyc3MrAVkl8jMz0uMqhNMYMkNyiogLKkorkVz9patAEgIQWwe4i6Tf7YYcZ73DkUErlSGD20mFm00E90NKqTe
+STRIPE_WEBHOOK_SECRET_LIVE=whsec_xntROMwDjvODkwjrt4C4PN4c0GyxPb9V
+
+# Stripe (Desenvolvimento - opcional)
+STRIPE_SECRET_KEY=sk_test_51OFQO3Ll2BG7oZycxtrqhACHjSU94lsUfj9vS1HC6e3nqZOcJABP13UkN8kDWBDug9OfPZWr07JdQekavTe5ggy200pUZ7F8dY
+VITE_STRIPE_PUBLIC_KEY=pk_live_51OFQO3Ll2BG7oZyc3MrAVkl8jMz0uMqhNMYMkNyiogLKkorkVz9patAEgIQWwe4i6Tf7YYcZ73DkUErlSGD20mFm00E90NKqTe
+>>>>>>> 4f1e34acc683f274efd681ab28ca7ab0602eff95
 
 # SMTP (Zoho)
 SMTP_HOST=smtp.zoho.com
 SMTP_PORT=465
+<<<<<<< HEAD
 SMTP_USER=seu_email@exemplo.com
 SMTP_PASS=sua_senha_aqui
 SMTP_FROM_EMAIL=seu_email@exemplo.com
 SMTP_FROM_NAME=Seu Nome
+=======
+SMTP_USER=contato@salaoonline.site
+SMTP_PASS=120300Jp*
+SMTP_FROM_EMAIL=contato@salaoonline.site
+SMTP_FROM_NAME=Contato Salão Online
+>>>>>>> 4f1e34acc683f274efd681ab28ca7ab0602eff95
 
 # Professional SMTP (mesmo que o SMTP acima)
 PROFESSIONAL_SMTP_HOST=smtp.zoho.com
 PROFESSIONAL_SMTP_PORT=465
+<<<<<<< HEAD
 PROFESSIONAL_SMTP_USER=seu_email@exemplo.com
 PROFESSIONAL_SMTP_PASS=sua_senha_aqui
+=======
+PROFESSIONAL_SMTP_USER=contato@salaoonline.site
+PROFESSIONAL_SMTP_PASS=120300Jp*
+>>>>>>> 4f1e34acc683f274efd681ab28ca7ab0602eff95
 
 # Base URL (atualize depois do deploy)
 BASE_URL=https://seu-app.onrender.com

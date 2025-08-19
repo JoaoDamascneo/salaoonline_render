@@ -2,13 +2,20 @@ services:
   - type: web
     name: salao-online
     env: node
+<<<<<<< HEAD
     buildCommand: chmod +x build-render.sh && ./build-render.sh
+=======
+    buildCommand: npm install && npm run build
+>>>>>>> 4f1e34acc683f274efd681ab28ca7ab0602eff95
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
+<<<<<<< HEAD
       - key: NODE_VERSION
         value: 20.16.0
+=======
+>>>>>>> 4f1e34acc683f274efd681ab28ca7ab0602eff95
       - key: DATABASE_URL
         sync: false
       - key: STRIPE_SECRET_KEY_LIVE

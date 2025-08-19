@@ -1,0 +1,13 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background branco -->
+  <rect width="32" height="32" fill="white"/>
+  
+  <!-- Elemento azul esquerdo (formato de chama/gota) -->
+  <path d="M2 8C2 12 4 15 7 18C8.5 16 9 14 9 12C9 8 6 4 2 2V8Z" fill="#1e5ce6"/>
+  
+  <!-- Letra S central em preto (baseada na logo oficial) -->
+  <path d="M16 4C21 4 25 7 25 12C25 15 23 17 20 18C23 19 26 22 26 26C26 29 23 32 18 32H14C9 32 5 29 5 26C5 24 6 22 8 22C10 22 12 24 12 26C12 27 13 28 14 28H18C20 28 22 26 22 24C22 22 20 20 18 20H16C13 20 10 18 10 15C10 12 13 10 16 10H18C21 10 23 8 23 5C23 3 21 1 18 1H14C11 1 9 3 9 5C9 7 7 9 5 9C3 9 1 7 1 5C1 2 7 4 16 4Z" fill="#000000"/>
+  
+  <!-- Elemento azul direito (formato de chama/gota) -->
+  <path d="M30 24C30 20 28 17 25 14C23.5 16 23 18 23 20C23 24 26 28 30 30V24Z" fill="#1e5ce6"/>
+</svg>
