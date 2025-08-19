@@ -1,0 +1,29 @@
+🔌 Conectando ao WebSocket: wss://salao-online-jpamdoliveira.replit.app/ws
+index-Bmhi4Zfp.js:472 ✅ WebSocket conectado
+index-Bmhi4Zfp.js:472 🔐 Dados de autenticação enviados
+index-Bmhi4Zfp.js:472 [SW] Service Worker registered successfully
+index-Bmhi4Zfp.js:472 Raw stats received: Object
+index-Bmhi4Zfp.js:472 Stats type: object
+index-Bmhi4Zfp.js:472 Stats keys: Array(5)
+index-Bmhi4Zfp.js:472 Raw stats received: Object
+index-Bmhi4Zfp.js:472 Stats type: object
+index-Bmhi4Zfp.js:472 Stats keys: Array(5)
+index-Bmhi4Zfp.js:472 Verificação de suporte: Object
+index-Bmhi4Zfp.js:472 Verificação de suporte: Object
+index-Bmhi4Zfp.js:472 Permissão de notificação concedida automaticamente
+index-Bmhi4Zfp.js:472 📨 Mensagem WebSocket recebida: {type: 'appointment_change', data: {…}}
+index-Bmhi4Zfp.js:472 📅 Cache de agendamentos atualizado
+index-Bmhi4Zfp.js:472 📨 Mensagem WebSocket recebida: {type: 'financial_change', data: {…}}
+index-Bmhi4Zfp.js:472 💰 Cache financeiro atualizado
+index-Bmhi4Zfp.js:472 Raw stats received: {todaysRevenue: '285.00', todaysAppointments: '8', totalClients: '2', activeServices: '3', lowStockProducts: '0'}
+index-Bmhi4Zfp.js:472 Stats type: object
+index-Bmhi4Zfp.js:472 Stats keys: (5) ['todaysRevenue', 'todaysAppointments', 'totalClients', 'activeServices', 'lowStockProducts']
+index-Bmhi4Zfp.js:472 Raw stats received: {todaysRevenue: '320.00', todaysAppointments: '8', totalClients: '2', activeServices: '3', lowStockProducts: '0'}
+index-Bmhi4Zfp.js:472 Stats type: object
+index-Bmhi4Zfp.js:472 Stats keys: (5) ['todaysRevenue', 'todaysAppointments', 'totalClients', 'activeServices', 'lowStockProducts']
+index-Bmhi4Zfp.js:472 Raw stats received: {todaysRevenue: '320.00', todaysAppointments: '8', totalClients: '2', activeServices: '3', lowStockProducts: '0'}
+index-Bmhi4Zfp.js:472 Stats type: object
+index-Bmhi4Zfp.js:472 Stats keys: (5) ['todaysRevenue', 'todaysAppointments', 'totalClients', 'activeServices', 'lowStockProducts']
+index-Bmhi4Zfp.js:472 Raw stats received: {todaysRevenue: '320.00', todaysAppointments: '8', totalClients: '2', activeServices: '3', lowStockProducts: '0'}
+index-Bmhi4Zfp.js:472 Stats type: object
+index-Bmhi4Zfp.js:472 Stats keys: (5) ['todaysRevenue', 'todaysAppointments', 'totalClients', 'activeServices', 'lowStockProducts']

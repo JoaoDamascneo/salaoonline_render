@@ -1,0 +1,41 @@
+[SW] Registering Service Worker...
+index-B4TZDMv4.js:472 🔌 Conectando ao WebSocket: wss://salao-online-jpamdoliveira.replit.app/ws
+index-B4TZDMv4.js:472 [SW] Service Worker registered successfully
+index-B4TZDMv4.js:472 ✅ WebSocket conectado
+index-B4TZDMv4.js:472 🔐 Dados de autenticação enviados
+index-B4TZDMv4.js:472 [SW] Service Worker registered successfully
+index-B4TZDMv4.js:472 StaffDashboardCards - isLoading: false
+index-B4TZDMv4.js:472 StaffDashboardCards - stats: {todaysRevenue: '285.00', todaysAppointments: '8', totalClients: '2', activeServices: '3', lowStockProducts: '0'}
+index-B4TZDMv4.js:472 StaffDashboardCards - error: null
+index-B4TZDMv4.js:472 StaffDashboardCards - stats JSON: {
+  "todaysRevenue": "285.00",
+  "todaysAppointments": "8",
+  "totalClients": "2",
+  "activeServices": "3",
+  "lowStockProducts": "0"
+}
+index-B4TZDMv4.js:472 StaffDashboardCards - stats keys: (5) ['todaysRevenue', 'todaysAppointments', 'totalClients', 'activeServices', 'lowStockProducts']
+index-B4TZDMv4.js:472 StaffDashboardCards - nextAppointmentTime: undefined
+index-B4TZDMv4.js:472 StaffDashboardCards - nextAppointmentClient: undefined
+index-B4TZDMv4.js:472 Card 0 - Title: Meus agendamentos hoje, Value: 0, Description: Confirmados e agendados
+index-B4TZDMv4.js:472 Card 1 - Title: Já atendidos, Value: 0, Description: Serviços completados hoje
+index-B4TZDMv4.js:472 Card 2 - Title: Próximo horário, Value: --:--, Description: Nenhum agendamento próximo
+index-B4TZDMv4.js:472 StaffDashboardCards - isLoading: false
+index-B4TZDMv4.js:472 StaffDashboardCards - stats: {todaysRevenue: '285.00', todaysAppointments: '8', totalClients: '2', activeServices: '3', lowStockProducts: '0'}
+index-B4TZDMv4.js:472 StaffDashboardCards - error: null
+index-B4TZDMv4.js:472 StaffDashboardCards - stats JSON: {
+  "todaysRevenue": "285.00",
+  "todaysAppointments": "8",
+  "totalClients": "2",
+  "activeServices": "3",
+  "lowStockProducts": "0"
+}
+index-B4TZDMv4.js:472 StaffDashboardCards - stats keys: (5) ['todaysRevenue', 'todaysAppointments', 'totalClients', 'activeServices', 'lowStockProducts']
+index-B4TZDMv4.js:472 StaffDashboardCards - nextAppointmentTime: undefined
+index-B4TZDMv4.js:472 StaffDashboardCards - nextAppointmentClient: undefined
+index-B4TZDMv4.js:472 Card 0 - Title: Meus agendamentos hoje, Value: 0, Description: Confirmados e agendados
+index-B4TZDMv4.js:472 Card 1 - Title: Já atendidos, Value: 0, Description: Serviços completados hoje
+index-B4TZDMv4.js:472 Card 2 - Title: Próximo horário, Value: --:--, Description: Nenhum agendamento próximo
+index-B4TZDMv4.js:472 Verificação de suporte: {hasServiceWorker: true, hasPushManager: true, hasNotification: true, userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Ap…KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'}
+index-B4TZDMv4.js:472 Verificação de suporte: {hasServiceWorker: true, hasPushManager: true, hasNotification: true, userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Ap…KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'}
+index-B4TZDMv4.js:472 Permissão de notificação concedida automaticamente

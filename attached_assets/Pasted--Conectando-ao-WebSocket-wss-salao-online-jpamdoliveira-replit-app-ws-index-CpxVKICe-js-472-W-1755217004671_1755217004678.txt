@@ -1,0 +1,51 @@
+🔌 Conectando ao WebSocket: wss://salao-online-jpamdoliveira.replit.app/ws
+index-CpxVKICe.js:472 ✅ WebSocket conectado
+index-CpxVKICe.js:472 🔐 Dados de autenticação enviados
+index-CpxVKICe.js:472 [SW] Service Worker registered successfully
+index-CpxVKICe.js:472  GET https://salao-online-jpamdoliveira.replit.app/api/appointments?page=1&limit=50&month=2025-08&status=all 500 (Internal Server Error)
+queryFn @ index-CpxVKICe.js:472
+i @ index-CpxVKICe.js:48
+y @ index-CpxVKICe.js:48
+start @ index-CpxVKICe.js:48
+fetch @ index-CpxVKICe.js:48
+Bo @ index-CpxVKICe.js:48
+onSubscribe @ index-CpxVKICe.js:48
+subscribe @ index-CpxVKICe.js:48
+(anonymous) @ index-CpxVKICe.js:48
+C0 @ index-CpxVKICe.js:38
+gu @ index-CpxVKICe.js:40
+Ei @ index-CpxVKICe.js:40
+gC @ index-CpxVKICe.js:40
+ga @ index-CpxVKICe.js:40
+hg @ index-CpxVKICe.js:40
+fa @ index-CpxVKICe.js:38
+(anonymous) @ index-CpxVKICe.js:40
+setTimeout
+a @ index-CpxVKICe.js:48
+o @ index-CpxVKICe.js:48
+batch @ index-CpxVKICe.js:48
+Zn @ index-CpxVKICe.js:48
+setData @ index-CpxVKICe.js:48
+onSuccess @ index-CpxVKICe.js:48
+f @ index-CpxVKICe.js:48
+Promise.then
+y @ index-CpxVKICe.js:48
+start @ index-CpxVKICe.js:48
+fetch @ index-CpxVKICe.js:48
+Bo @ index-CpxVKICe.js:48
+onSubscribe @ index-CpxVKICe.js:48
+subscribe @ index-CpxVKICe.js:48
+(anonymous) @ index-CpxVKICe.js:48
+C0 @ index-CpxVKICe.js:38
+gu @ index-CpxVKICe.js:40
+Ei @ index-CpxVKICe.js:40
+hg @ index-CpxVKICe.js:40
+fa @ index-CpxVKICe.js:38
+gC @ index-CpxVKICe.js:40
+ga @ index-CpxVKICe.js:40
+sj @ index-CpxVKICe.js:40
+k @ index-CpxVKICe.js:25
+M @ index-CpxVKICe.js:25Understand this error
+index-CpxVKICe.js:472 Verificação de suporte: {hasServiceWorker: true, hasPushManager: true, hasNotification: true, userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Ap…KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'}
+index-CpxVKICe.js:472 Verificação de suporte: {hasServiceWorker: true, hasPushManager: true, hasNotification: true, userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Ap…KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'}
+index-CpxVKICe.js:472 Permissão de notificação concedida automaticamente

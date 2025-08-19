@@ -1,0 +1,61 @@
+Problema atual:
+Não estou conseguindo criar novos agendamentos corretamente.
+
+O que precisa funcionar:
+	1.	Cada profissional precisa ter sua própria agenda separada.
+Cada agendamento é vinculado diretamente a um profissional específico.
+	2.	Não pode haver conflitos de horários para o mesmo profissional.
+Se o profissional tem um agendamento das 11:00 até 12:00, não pode ser criado outro agendamento para ele que inicie ou termine dentro desse intervalo.
+Exemplo inválido: agendamento às 11:30 para o mesmo profissional.
+	3.	Não pode criar agendamento que ultrapasse o horário de funcionamento do estabelecimento.
+Se o salão fecha às 18:00 e o serviço dura 1 hora, não pode agendar esse serviço às 17:30, porque terminaria às 18:30.
+	4.	A lógica do tempo de serviço deve funcionar assim:
+Data início → horário marcado pelo cliente
+Data fim → horário de início + duração do serviço - 1 minuto
+Exemplo: Serviço de 30 minutos marcado para 12:00 → término será 12:29.
+
+Banco de Dados — Estrutura necessária:
+
+Tabela: agendamentos
+	•	id (INTEGER, PK, auto_increment)
+	•	profissional_id (INTEGER, FK → profissionais.id)
+	•	cliente_id (INTEGER, FK → clientes.id)
+	•	servico_id (INTEGER, FK → servicos.id)
+	•	data_inicio (DATETIME)
+	•	data_fim (DATETIME)
+	•	observacoes (TEXT, opcional)
+
+Tabela: profissionais
+	•	id (INTEGER, PK)
+	•	nome (TEXT)
+	•	especialidade (TEXT)
+	•	[outros campos necessários]
+
+Tabela: servicos
+	•	id (INTEGER, PK)
+	•	nome (TEXT)
+	•	duracao_minutos (INTEGER)
+
+Regras do Sistema de Agendamento:
+	1.	Quando for criar um novo agendamento, calcular automaticamente o campo data_fim com base no data_inicio + duracao_minutos - 1 minuto.
+	2.	Antes de inserir no banco, o sistema deve fazer duas validações:
+
+2.1. Conflito de horário do profissional:
+SELECT * FROM agendamentos WHERE profissional_id = ? AND (
+(? BETWEEN data_inicio AND data_fim) OR
+(? BETWEEN data_inicio AND data_fim) OR
+(data_inicio BETWEEN ? AND ?) OR
+(data_fim BETWEEN ? AND ?)
+)
+Se essa consulta retornar algum resultado, bloquear a criação do agendamento e exibir mensagem de erro.
+
+2.2. Horário de funcionamento:
+Se data_fim ultrapassar o horário de fechamento (por exemplo, 18:00), bloquear o agendamento e exibir mensagem de erro.
+
+Processo esperado:
+	1.	Cliente escolhe o profissional
+	2.	Sistema exibe horários disponíveis com base nas agendas já criadas
+	3.	Cliente escolhe o horário desejado
+	4.	Sistema calcula data_fim automaticamente
+	5.	Sistema valida conflito e horário de funcionamento
+	6.	Se tudo estiver certo, salva no banco

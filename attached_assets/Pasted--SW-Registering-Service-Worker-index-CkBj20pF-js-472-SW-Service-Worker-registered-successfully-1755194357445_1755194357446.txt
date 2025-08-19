@@ -1,0 +1,388 @@
+[SW] Registering Service Worker...
+index-CkBj20pF.js:472 [SW] Service Worker registered successfully
+index-CkBj20pF.js:472 🔌 Conectando ao WebSocket: wss://salao-online-jpamdoliveira.replit.app/ws
+index-CkBj20pF.js:472 🏥 [DASHBOARD] User role: undefined User ID: undefined isStaff: false
+index-CkBj20pF.js:472 🏥 [DASHBOARD] User role: staff User ID: 4 isStaff: true
+index-CkBj20pF.js:472 [SW] Service Worker registered successfully
+index-CkBj20pF.js:472 ✅ WebSocket conectado
+index-CkBj20pF.js:472 🔐 Dados de autenticação enviados
+index-CkBj20pF.js:472 🏥 [DASHBOARD] User role: undefined User ID: undefined isStaff: false
+index-CkBj20pF.js:472 🏥 [DASHBOARD] User role: staff User ID: 4 isStaff: true
+index-CkBj20pF.js:472 🏥 [DASHBOARD] User role: staff User ID: 4 isStaff: true
+index-CkBj20pF.js:472 🏥 [STAFF DASHBOARD] Props received - isLoading: false stats: {todaysRevenue: '320.00', todaysAppointments: '8', totalClients: '2', activeServices: '3', lowStockProducts: '0'}
+index-CkBj20pF.js:472 🏥 [STAFF DASHBOARD] Raw stats received: {todaysRevenue: '320.00', todaysAppointments: '8', totalClients: '2', activeServices: '3', lowStockProducts: '0'}
+index-CkBj20pF.js:472 🏥 [STAFF DASHBOARD] Stats type: object
+index-CkBj20pF.js:472 🏥 [STAFF DASHBOARD] Stats keys: (5) ['todaysRevenue', 'todaysAppointments', 'totalClients', 'activeServices', 'lowStockProducts']
+index-CkBj20pF.js:472 ❌ [STAFF DASHBOARD] ERRO: Recebendo dados de ADMIN em vez de STAFF!
+yR @ index-CkBj20pF.js:472
+np @ index-CkBj20pF.js:38
+dj @ index-CkBj20pF.js:40
+oj @ index-CkBj20pF.js:40
+xC @ index-CkBj20pF.js:40
+Od @ index-CkBj20pF.js:40
+hg @ index-CkBj20pF.js:40
+ma @ index-CkBj20pF.js:38
+(anonymous) @ index-CkBj20pF.js:40
+setTimeout
+a @ index-CkBj20pF.js:48
+o @ index-CkBj20pF.js:48
+batch @ index-CkBj20pF.js:48
+Zn @ index-CkBj20pF.js:48
+setData @ index-CkBj20pF.js:48
+onSuccess @ index-CkBj20pF.js:48
+m @ index-CkBj20pF.js:48
+Promise.then
+y @ index-CkBj20pF.js:48
+start @ index-CkBj20pF.js:48
+fetch @ index-CkBj20pF.js:48
+Qo @ index-CkBj20pF.js:48
+onSubscribe @ index-CkBj20pF.js:48
+subscribe @ index-CkBj20pF.js:48
+(anonymous) @ index-CkBj20pF.js:48
+C0 @ index-CkBj20pF.js:38
+gu @ index-CkBj20pF.js:40
+Pi @ index-CkBj20pF.js:40
+vC @ index-CkBj20pF.js:40
+va @ index-CkBj20pF.js:40
+hg @ index-CkBj20pF.js:40
+ma @ index-CkBj20pF.js:38
+(anonymous) @ index-CkBj20pF.js:40
+setTimeout
+a @ index-CkBj20pF.js:48
+o @ index-CkBj20pF.js:48
+batch @ index-CkBj20pF.js:48
+Zn @ index-CkBj20pF.js:48
+setData @ index-CkBj20pF.js:48
+onSuccess @ index-CkBj20pF.js:48
+m @ index-CkBj20pF.js:48
+Promise.then
+y @ index-CkBj20pF.js:48
+start @ index-CkBj20pF.js:48
+fetch @ index-CkBj20pF.js:48
+Qo @ index-CkBj20pF.js:48
+onSubscribe @ index-CkBj20pF.js:48
+subscribe @ index-CkBj20pF.js:48
+(anonymous) @ index-CkBj20pF.js:48
+C0 @ index-CkBj20pF.js:38
+gu @ index-CkBj20pF.js:40
+Pi @ index-CkBj20pF.js:40
+hg @ index-CkBj20pF.js:40
+ma @ index-CkBj20pF.js:38
+vC @ index-CkBj20pF.js:40
+va @ index-CkBj20pF.js:40
+sj @ index-CkBj20pF.js:40
+k @ index-CkBj20pF.js:25
+R @ index-CkBj20pF.js:25Understand this error
+index-CkBj20pF.js:472 ❌ [STAFF DASHBOARD] Dados esperados: todaysAppointmentsCount, completedAppointmentsCount
+yR @ index-CkBj20pF.js:472
+np @ index-CkBj20pF.js:38
+dj @ index-CkBj20pF.js:40
+oj @ index-CkBj20pF.js:40
+xC @ index-CkBj20pF.js:40
+Od @ index-CkBj20pF.js:40
+hg @ index-CkBj20pF.js:40
+ma @ index-CkBj20pF.js:38
+(anonymous) @ index-CkBj20pF.js:40
+setTimeout
+a @ index-CkBj20pF.js:48
+o @ index-CkBj20pF.js:48
+batch @ index-CkBj20pF.js:48
+Zn @ index-CkBj20pF.js:48
+setData @ index-CkBj20pF.js:48
+onSuccess @ index-CkBj20pF.js:48
+m @ index-CkBj20pF.js:48
+Promise.then
+y @ index-CkBj20pF.js:48
+start @ index-CkBj20pF.js:48
+fetch @ index-CkBj20pF.js:48
+Qo @ index-CkBj20pF.js:48
+onSubscribe @ index-CkBj20pF.js:48
+subscribe @ index-CkBj20pF.js:48
+(anonymous) @ index-CkBj20pF.js:48
+C0 @ index-CkBj20pF.js:38
+gu @ index-CkBj20pF.js:40
+Pi @ index-CkBj20pF.js:40
+vC @ index-CkBj20pF.js:40
+va @ index-CkBj20pF.js:40
+hg @ index-CkBj20pF.js:40
+ma @ index-CkBj20pF.js:38
+(anonymous) @ index-CkBj20pF.js:40
+setTimeout
+a @ index-CkBj20pF.js:48
+o @ index-CkBj20pF.js:48
+batch @ index-CkBj20pF.js:48
+Zn @ index-CkBj20pF.js:48
+setData @ index-CkBj20pF.js:48
+onSuccess @ index-CkBj20pF.js:48
+m @ index-CkBj20pF.js:48
+Promise.then
+y @ index-CkBj20pF.js:48
+start @ index-CkBj20pF.js:48
+fetch @ index-CkBj20pF.js:48
+Qo @ index-CkBj20pF.js:48
+onSubscribe @ index-CkBj20pF.js:48
+subscribe @ index-CkBj20pF.js:48
+(anonymous) @ index-CkBj20pF.js:48
+C0 @ index-CkBj20pF.js:38
+gu @ index-CkBj20pF.js:40
+Pi @ index-CkBj20pF.js:40
+hg @ index-CkBj20pF.js:40
+ma @ index-CkBj20pF.js:38
+vC @ index-CkBj20pF.js:40
+va @ index-CkBj20pF.js:40
+sj @ index-CkBj20pF.js:40
+k @ index-CkBj20pF.js:25
+R @ index-CkBj20pF.js:25Understand this error
+index-CkBj20pF.js:472 ❌ [STAFF DASHBOARD] Dados recebidos: (5) ['todaysRevenue', 'todaysAppointments', 'totalClients', 'activeServices', 'lowStockProducts']
+yR @ index-CkBj20pF.js:472
+np @ index-CkBj20pF.js:38
+dj @ index-CkBj20pF.js:40
+oj @ index-CkBj20pF.js:40
+xC @ index-CkBj20pF.js:40
+Od @ index-CkBj20pF.js:40
+hg @ index-CkBj20pF.js:40
+ma @ index-CkBj20pF.js:38
+(anonymous) @ index-CkBj20pF.js:40
+setTimeout
+a @ index-CkBj20pF.js:48
+o @ index-CkBj20pF.js:48
+batch @ index-CkBj20pF.js:48
+Zn @ index-CkBj20pF.js:48
+setData @ index-CkBj20pF.js:48
+onSuccess @ index-CkBj20pF.js:48
+m @ index-CkBj20pF.js:48
+Promise.then
+y @ index-CkBj20pF.js:48
+start @ index-CkBj20pF.js:48
+fetch @ index-CkBj20pF.js:48
+Qo @ index-CkBj20pF.js:48
+onSubscribe @ index-CkBj20pF.js:48
+subscribe @ index-CkBj20pF.js:48
+(anonymous) @ index-CkBj20pF.js:48
+C0 @ index-CkBj20pF.js:38
+gu @ index-CkBj20pF.js:40
+Pi @ index-CkBj20pF.js:40
+vC @ index-CkBj20pF.js:40
+va @ index-CkBj20pF.js:40
+hg @ index-CkBj20pF.js:40
+ma @ index-CkBj20pF.js:38
+(anonymous) @ index-CkBj20pF.js:40
+setTimeout
+a @ index-CkBj20pF.js:48
+o @ index-CkBj20pF.js:48
+batch @ index-CkBj20pF.js:48
+Zn @ index-CkBj20pF.js:48
+setData @ index-CkBj20pF.js:48
+onSuccess @ index-CkBj20pF.js:48
+m @ index-CkBj20pF.js:48
+Promise.then
+y @ index-CkBj20pF.js:48
+start @ index-CkBj20pF.js:48
+fetch @ index-CkBj20pF.js:48
+Qo @ index-CkBj20pF.js:48
+onSubscribe @ index-CkBj20pF.js:48
+subscribe @ index-CkBj20pF.js:48
+(anonymous) @ index-CkBj20pF.js:48
+C0 @ index-CkBj20pF.js:38
+gu @ index-CkBj20pF.js:40
+Pi @ index-CkBj20pF.js:40
+hg @ index-CkBj20pF.js:40
+ma @ index-CkBj20pF.js:38
+vC @ index-CkBj20pF.js:40
+va @ index-CkBj20pF.js:40
+sj @ index-CkBj20pF.js:40
+k @ index-CkBj20pF.js:25
+R @ index-CkBj20pF.js:25Understand this error
+index-CkBj20pF.js:472 📊 [STAFF DASHBOARD] Extracted data: {todaysCount: 0, completedCount: 0, nextTime: undefined, nextClient: undefined, nextDate: undefined}
+index-CkBj20pF.js:472 🏥 [DASHBOARD] User role: staff User ID: 4 isStaff: true
+index-CkBj20pF.js:472 🏥 [STAFF DASHBOARD] Props received - isLoading: false stats: {todaysRevenue: '320.00', todaysAppointments: '8', totalClients: '2', activeServices: '3', lowStockProducts: '0'}
+index-CkBj20pF.js:472 🏥 [STAFF DASHBOARD] Raw stats received: {todaysRevenue: '320.00', todaysAppointments: '8', totalClients: '2', activeServices: '3', lowStockProducts: '0'}
+index-CkBj20pF.js:472 🏥 [STAFF DASHBOARD] Stats type: object
+index-CkBj20pF.js:472 🏥 [STAFF DASHBOARD] Stats keys: (5) ['todaysRevenue', 'todaysAppointments', 'totalClients', 'activeServices', 'lowStockProducts']
+index-CkBj20pF.js:472 ❌ [STAFF DASHBOARD] ERRO: Recebendo dados de ADMIN em vez de STAFF!
+yR @ index-CkBj20pF.js:472
+np @ index-CkBj20pF.js:38
+wf @ index-CkBj20pF.js:40
+dj @ index-CkBj20pF.js:40
+oj @ index-CkBj20pF.js:40
+xC @ index-CkBj20pF.js:40
+Od @ index-CkBj20pF.js:40
+hg @ index-CkBj20pF.js:40
+ma @ index-CkBj20pF.js:38
+(anonymous) @ index-CkBj20pF.js:40
+setTimeout
+a @ index-CkBj20pF.js:48
+o @ index-CkBj20pF.js:48
+batch @ index-CkBj20pF.js:48
+Zn @ index-CkBj20pF.js:48
+setData @ index-CkBj20pF.js:48
+onSuccess @ index-CkBj20pF.js:48
+m @ index-CkBj20pF.js:48
+Promise.then
+y @ index-CkBj20pF.js:48
+start @ index-CkBj20pF.js:48
+fetch @ index-CkBj20pF.js:48
+Qo @ index-CkBj20pF.js:48
+onSubscribe @ index-CkBj20pF.js:48
+subscribe @ index-CkBj20pF.js:48
+(anonymous) @ index-CkBj20pF.js:48
+C0 @ index-CkBj20pF.js:38
+gu @ index-CkBj20pF.js:40
+Pi @ index-CkBj20pF.js:40
+vC @ index-CkBj20pF.js:40
+va @ index-CkBj20pF.js:40
+hg @ index-CkBj20pF.js:40
+ma @ index-CkBj20pF.js:38
+(anonymous) @ index-CkBj20pF.js:40
+setTimeout
+a @ index-CkBj20pF.js:48
+o @ index-CkBj20pF.js:48
+batch @ index-CkBj20pF.js:48
+Zn @ index-CkBj20pF.js:48
+setData @ index-CkBj20pF.js:48
+onSuccess @ index-CkBj20pF.js:48
+m @ index-CkBj20pF.js:48
+Promise.then
+y @ index-CkBj20pF.js:48
+start @ index-CkBj20pF.js:48
+fetch @ index-CkBj20pF.js:48
+Qo @ index-CkBj20pF.js:48
+onSubscribe @ index-CkBj20pF.js:48
+subscribe @ index-CkBj20pF.js:48
+(anonymous) @ index-CkBj20pF.js:48
+C0 @ index-CkBj20pF.js:38
+gu @ index-CkBj20pF.js:40
+Pi @ index-CkBj20pF.js:40
+hg @ index-CkBj20pF.js:40
+ma @ index-CkBj20pF.js:38
+vC @ index-CkBj20pF.js:40
+va @ index-CkBj20pF.js:40
+sj @ index-CkBj20pF.js:40
+k @ index-CkBj20pF.js:25
+R @ index-CkBj20pF.js:25Understand this error
+index-CkBj20pF.js:472 ❌ [STAFF DASHBOARD] Dados esperados: todaysAppointmentsCount, completedAppointmentsCount
+yR @ index-CkBj20pF.js:472
+np @ index-CkBj20pF.js:38
+wf @ index-CkBj20pF.js:40
+dj @ index-CkBj20pF.js:40
+oj @ index-CkBj20pF.js:40
+xC @ index-CkBj20pF.js:40
+Od @ index-CkBj20pF.js:40
+hg @ index-CkBj20pF.js:40
+ma @ index-CkBj20pF.js:38
+(anonymous) @ index-CkBj20pF.js:40
+setTimeout
+a @ index-CkBj20pF.js:48
+o @ index-CkBj20pF.js:48
+batch @ index-CkBj20pF.js:48
+Zn @ index-CkBj20pF.js:48
+setData @ index-CkBj20pF.js:48
+onSuccess @ index-CkBj20pF.js:48
+m @ index-CkBj20pF.js:48
+Promise.then
+y @ index-CkBj20pF.js:48
+start @ index-CkBj20pF.js:48
+fetch @ index-CkBj20pF.js:48
+Qo @ index-CkBj20pF.js:48
+onSubscribe @ index-CkBj20pF.js:48
+subscribe @ index-CkBj20pF.js:48
+(anonymous) @ index-CkBj20pF.js:48
+C0 @ index-CkBj20pF.js:38
+gu @ index-CkBj20pF.js:40
+Pi @ index-CkBj20pF.js:40
+vC @ index-CkBj20pF.js:40
+va @ index-CkBj20pF.js:40
+hg @ index-CkBj20pF.js:40
+ma @ index-CkBj20pF.js:38
+(anonymous) @ index-CkBj20pF.js:40
+setTimeout
+a @ index-CkBj20pF.js:48
+o @ index-CkBj20pF.js:48
+batch @ index-CkBj20pF.js:48
+Zn @ index-CkBj20pF.js:48
+setData @ index-CkBj20pF.js:48
+onSuccess @ index-CkBj20pF.js:48
+m @ index-CkBj20pF.js:48
+Promise.then
+y @ index-CkBj20pF.js:48
+start @ index-CkBj20pF.js:48
+fetch @ index-CkBj20pF.js:48
+Qo @ index-CkBj20pF.js:48
+onSubscribe @ index-CkBj20pF.js:48
+subscribe @ index-CkBj20pF.js:48
+(anonymous) @ index-CkBj20pF.js:48
+C0 @ index-CkBj20pF.js:38
+gu @ index-CkBj20pF.js:40
+Pi @ index-CkBj20pF.js:40
+hg @ index-CkBj20pF.js:40
+ma @ index-CkBj20pF.js:38
+vC @ index-CkBj20pF.js:40
+va @ index-CkBj20pF.js:40
+sj @ index-CkBj20pF.js:40
+k @ index-CkBj20pF.js:25
+R @ index-CkBj20pF.js:25Understand this error
+index-CkBj20pF.js:472 ❌ [STAFF DASHBOARD] Dados recebidos: (5) ['todaysRevenue', 'todaysAppointments', 'totalClients', 'activeServices', 'lowStockProducts']
+yR @ index-CkBj20pF.js:472
+np @ index-CkBj20pF.js:38
+wf @ index-CkBj20pF.js:40
+dj @ index-CkBj20pF.js:40
+oj @ index-CkBj20pF.js:40
+xC @ index-CkBj20pF.js:40
+Od @ index-CkBj20pF.js:40
+hg @ index-CkBj20pF.js:40
+ma @ index-CkBj20pF.js:38
+(anonymous) @ index-CkBj20pF.js:40
+setTimeout
+a @ index-CkBj20pF.js:48
+o @ index-CkBj20pF.js:48
+batch @ index-CkBj20pF.js:48
+Zn @ index-CkBj20pF.js:48
+setData @ index-CkBj20pF.js:48
+onSuccess @ index-CkBj20pF.js:48
+m @ index-CkBj20pF.js:48
+Promise.then
+y @ index-CkBj20pF.js:48
+start @ index-CkBj20pF.js:48
+fetch @ index-CkBj20pF.js:48
+Qo @ index-CkBj20pF.js:48
+onSubscribe @ index-CkBj20pF.js:48
+subscribe @ index-CkBj20pF.js:48
+(anonymous) @ index-CkBj20pF.js:48
+C0 @ index-CkBj20pF.js:38
+gu @ index-CkBj20pF.js:40
+Pi @ index-CkBj20pF.js:40
+vC @ index-CkBj20pF.js:40
+va @ index-CkBj20pF.js:40
+hg @ index-CkBj20pF.js:40
+ma @ index-CkBj20pF.js:38
+(anonymous) @ index-CkBj20pF.js:40
+setTimeout
+a @ index-CkBj20pF.js:48
+o @ index-CkBj20pF.js:48
+batch @ index-CkBj20pF.js:48
+Zn @ index-CkBj20pF.js:48
+setData @ index-CkBj20pF.js:48
+onSuccess @ index-CkBj20pF.js:48
+m @ index-CkBj20pF.js:48
+Promise.then
+y @ index-CkBj20pF.js:48
+start @ index-CkBj20pF.js:48
+fetch @ index-CkBj20pF.js:48
+Qo @ index-CkBj20pF.js:48
+onSubscribe @ index-CkBj20pF.js:48
+subscribe @ index-CkBj20pF.js:48
+(anonymous) @ index-CkBj20pF.js:48
+C0 @ index-CkBj20pF.js:38
+gu @ index-CkBj20pF.js:40
+Pi @ index-CkBj20pF.js:40
+hg @ index-CkBj20pF.js:40
+ma @ index-CkBj20pF.js:38
+vC @ index-CkBj20pF.js:40
+va @ index-CkBj20pF.js:40
+sj @ index-CkBj20pF.js:40
+k @ index-CkBj20pF.js:25
+R @ index-CkBj20pF.js:25Understand this error
+index-CkBj20pF.js:472 📊 [STAFF DASHBOARD] Extracted data: {todaysCount: 0, completedCount: 0, nextTime: undefined, nextClient: undefined, nextDate: undefined}
+index-CkBj20pF.js:472 Verificação de suporte: {hasServiceWorker: true, hasPushManager: true, hasNotification: true, userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Ap…KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'}
+index-CkBj20pF.js:472 Verificação de suporte: {hasServiceWorker: true, hasPushManager: true, hasNotification: true, userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Ap…KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'}
+index-CkBj20pF.js:472 Permissão de notificação concedida automaticamente

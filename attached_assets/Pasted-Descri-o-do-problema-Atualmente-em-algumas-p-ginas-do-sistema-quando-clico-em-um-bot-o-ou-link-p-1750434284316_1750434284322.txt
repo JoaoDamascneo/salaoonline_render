@@ -1,0 +1,28 @@
+Descrição do problema:
+Atualmente, em algumas páginas do sistema, quando clico em um botão ou link para navegar para outra página ou executar alguma ação, a tela fica completamente preta (ou branca, dependendo do tema). Porém, quando atualizo a página, ela carrega corretamente.
+
+O que precisa ser feito:
+	1.	Revisar as rotas da aplicação:
+	•	Verificar se todas as rotas estão corretamente registradas e configuradas no sistema de roteamento (ex.: react-router-dom, Next.js Router, etc.).
+	•	Conferir se as navegações (navigate(), router.push(), ou equivalente) estão usando os métodos corretos.
+	2.	Verificar problemas no carregamento de estado/contexto:
+	•	Pode estar ocorrendo um delay ou falha no carregamento de dados/contextos necessários para renderizar a nova página.
+	•	Solução: Implementar loaders ou spinners enquanto os dados são carregados, ou garantir que os dados estejam carregados antes da renderização da nova tela.
+	3.	Conferir tratamento de erros:
+	•	Provavelmente a tela preta ocorre porque alguma requisição ou carregamento falha silenciosamente.
+	•	Adicionar logs de erro no console e configurar tratamento visual de erros (ex.: mensagens de “Erro ao carregar página, tente novamente”).
+	4.	Verificar transições e animações:
+	•	Caso o sistema utilize animações entre rotas, conferir se há algum problema de transição mal configurada que possa estar deixando a tela preta durante o processo.
+	5.	Preloading de rotas (Next.js):
+	•	Caso utilize Next.js, verificar se as rotas estão configuradas para preloading ou utilizar a estratégia de suspense e fallback com loaders.
+	6.	Cache e SW (caso tenha):
+	•	Se estiver utilizando Service Workers, conferir se há conflitos no cache, que podem estar prejudicando o carregamento das páginas.
+	•	Se necessário, limpar caches antigos.
+
+⸻
+
+Resumo técnico:
+	•	Corrigir o roteamento/navigation entre páginas → evitar que a tela fique preta.
+	•	Implementar feedback visual (carregamento/spinner) se necessário.
+	•	Garantir que os estados/contextos necessários estejam carregados antes da renderização.
+	•	Adicionar tratamento explícito de erros.

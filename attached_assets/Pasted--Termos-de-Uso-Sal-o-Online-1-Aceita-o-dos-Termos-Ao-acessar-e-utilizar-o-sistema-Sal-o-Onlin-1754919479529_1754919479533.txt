@@ -1,0 +1,61 @@
+📜 Termos de Uso — Salão Online
+
+1. Aceitação dos Termos
+Ao acessar e utilizar o sistema Salão Online, você concorda integralmente com estes Termos de Uso. Caso não concorde, não deverá utilizar o sistema.
+
+2. Descrição do Serviço
+O Salão Online é um sistema de gestão voltado para estabelecimentos de beleza, oferecendo funcionalidades como agendamento, controle de clientes, estoque, painel financeiro e outros recursos descritos no site oficial. O serviço é oferecido em diferentes planos, cujas funcionalidades e preços variam.
+
+3. Responsabilidades do Usuário
+	•	Manter seus dados de acesso em sigilo e não compartilhá-los com terceiros.
+	•	Utilizar o sistema de forma ética e em conformidade com as leis vigentes.
+	•	Garantir a veracidade das informações cadastradas.
+
+4. Limitação de Responsabilidade
+	•	O Salão Online não se responsabiliza por perdas, danos ou prejuízos decorrentes do uso indevido do sistema.
+	•	O módulo de integração com WhatsApp utiliza tecnologia de terceiros e não é uma API oficial do WhatsApp, podendo estar sujeito a instabilidades ou bloqueio de contas pela Meta. O uso dessa integração é de responsabilidade do usuário.
+
+5. Alterações nos Termos
+O Salão Online pode alterar estes Termos de Uso a qualquer momento, sendo de responsabilidade do usuário revisá-los periodicamente.
+
+6. Cancelamento e Rescisão
+O usuário pode solicitar o cancelamento do serviço a qualquer momento. O Salão Online reserva-se o direito de suspender ou encerrar contas que violem estes termos.
+
+⸻
+
+📜 Política de Privacidade — Salão Online
+
+1. Coleta de Informações
+Coletamos informações pessoais fornecidas pelo usuário, incluindo:
+	•	Nome e dados de contato (e-mail, telefone, endereço).
+	•	Informações comerciais (nome do estabelecimento, serviços oferecidos, horário de funcionamento).
+	•	Dados de uso do sistema (agendamentos, vendas, histórico de acessos).
+
+2. Uso das Informações
+Os dados coletados são utilizados para:
+	•	Fornecer e manter o funcionamento do sistema.
+	•	Personalizar a experiência do usuário.
+	•	Fornecer suporte técnico.
+	•	Enviar comunicações operacionais e avisos importantes.
+
+3. Compartilhamento de Informações
+Não compartilhamos dados pessoais com terceiros, exceto quando necessário para:
+	•	Cumprimento de obrigações legais.
+	•	Prestação de serviços essenciais ao funcionamento do sistema (como hospedagem e integrações).
+
+4. Integração com WhatsApp
+O sistema oferece integração com o WhatsApp através de tecnologia de terceiros não oficial.
+	•	Essa integração não é fornecida pela Meta e pode estar sujeita a instabilidades ou banimento de contas.
+	•	O usuário é responsável por manter backups e canais alternativos de comunicação com seus clientes.
+
+5. Segurança dos Dados
+Adotamos medidas técnicas e organizacionais para proteger os dados contra acesso não autorizado, perda ou alteração.
+
+6. Direitos do Usuário
+O usuário pode solicitar a qualquer momento:
+	•	Acesso aos seus dados pessoais.
+	•	Correção ou atualização de informações.
+	•	Exclusão definitiva de seus dados (respeitadas obrigações legais).
+
+7. Alterações na Política de Privacidade
+Esta política pode ser alterada a qualquer momento, sendo a versão mais recente sempre disponibilizada no sistema.

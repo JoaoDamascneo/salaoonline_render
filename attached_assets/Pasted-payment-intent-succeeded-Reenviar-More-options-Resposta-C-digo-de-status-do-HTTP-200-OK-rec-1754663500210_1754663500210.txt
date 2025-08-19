@@ -1,0 +1,83 @@
+payment_intent.succeeded
+
+Reenviar
+
+More options
+Resposta
+Código de status do HTTP
+200 (OK)
+{
+  "received": true
+}
+Solicitação
+{
+  "id": "evt_3RtrHeLl2BG7oZyc1x2OK3tn",
+  "object": "event",
+  "api_version": "2023-10-16",
+  "created": 1754663319,
+  "data": {
+    "object": {
+      "id": "pi_3RtrHeLl2BG7oZyc14gw2fdv",
+      "object": "payment_intent",
+      "amount": 11990,
+      "amount_capturable": 0,
+      "amount_details": {
+        "tip": {
+        }
+      },
+      "amount_received": 11990,
+      "application": null,
+      "application_fee_amount": null,
+      "automatic_payment_methods": null,
+      "canceled_at": null,
+      "cancellation_reason": null,
+      "capture_method": "automatic",
+      "client_secret": "pi_3RtrHeLl2BG7oZyc14gw2fdv_secret_c09EM7DdjKooOkqSKiEV8UOIc",
+      "confirmation_method": "automatic",
+      "created": 1754663318,
+      "currency": "brl",
+      "customer": "cus_SpWKPbX3MHokkP",
+      "description": "Subscription creation",
+      "invoice": null,
+      "last_payment_error": null,
+      "latest_charge": "ch_3RtrHeLl2BG7oZyc1j9CyX6M",
+      "livemode": false,
+      "metadata": {
+      },
+      "next_action": null,
+      "on_behalf_of": null,
+      "payment_method": "pm_1RtrHdLl2BG7oZycwYELtAoF",
+      "payment_method_configuration_details": null,
+      "payment_method_options": {
+        "card": {
+          "installments": null,
+          "mandate_options": null,
+          "network": null,
+          "request_three_d_secure": "automatic",
+          "setup_future_usage": "off_session"
+        }
+      },
+      "payment_method_types": [
+        "card"
+      ],
+      "processing": null,
+      "receipt_email": null,
+      "review": null,
+      "setup_future_usage": "off_session",
+      "shipping": null,
+      "source": null,
+      "statement_descriptor": null,
+      "statement_descriptor_suffix": null,
+      "status": "succeeded",
+      "transfer_data": null,
+      "transfer_group": null
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 1,
+  "request": {
+    "id": null,
+    "idempotency_key": "2d847c98-f2b1-4aff-ab41-189efac2a4e5"
+  },
+  "type": "payment_intent.succeeded"
+}
