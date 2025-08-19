@@ -1,0 +1,39 @@
+Na página Clientes, cada cliente cadastrado é representado por um card (ou quadrinho). Dentro desse card, há uma opção Novo Agendamento.
+
+Objetivo da funcionalidade:
+Ao clicar em Novo Agendamento dentro do card de um cliente específico, o sistema deve:
+	1.	Redirecionar o usuário para a página Agendamentos.
+	2.	Abrir automaticamente o modal de Novo Agendamento.
+	3.	Pré-preencher o campo Cliente no formulário com o cliente correspondente que foi clicado.
+
+Fluxo esperado:
+	1.	Página Clientes → Botão “Novo Agendamento” → Redireciona para /agendamentos
+	2.	Na montagem da página /agendamentos, o modal Novo Agendamento deve abrir automaticamente.
+	3.	O campo Cliente no formulário do modal já deve estar preenchido com o cliente escolhido.
+	4.	Usuário continua preenchendo os demais campos do agendamento.
+
+—
+
+Regras de Implementação:
+	•	Utilizar Query Params ou Estado Global para transportar o ID ou objeto do cliente selecionado entre as páginas.
+	•	Exemplo via URL: /agendamentos?clienteId=123
+	•	Alternativa via estado global (Context API, Zustand ou similar)
+	•	A página Agendamentos deve:
+	•	Verificar, ao ser carregada, se existe um cliente pré-selecionado.
+	•	Caso exista:
+	•	Abrir o modal automaticamente.
+	•	Pré-preencher o campo Cliente com as informações correspondentes.
+	•	Caso não exista:
+	•	Exibir a página normalmente, sem abrir o modal.
+	•	Caso seja utilizado clienteId na URL:
+	•	Implementar lógica para buscar o cliente correspondente no carregamento da página.
+	•	Garantir que o campo de Cliente seja editável, caso o usuário deseje trocar o cliente na hora de criar o agendamento.
+
+—
+
+Boas práticas:
+	•	Modais devem ter controle centralizado para abertura automática e manual.
+	•	Evitar lógica duplicada: a abertura automática do modal e a abertura por botão devem usar o mesmo componente/função.
+	•	Garantir responsividade e acessibilidade no processo de redirecionamento e abertura de modal.
+	•	Tratar cenários de erro: se o cliente não for encontrado (por exemplo, clienteId inválido), exibir feedback apropriado e não abrir o modal.
+	•	Preferência por utilização de Next Router Query (em projetos Next.js) para leitura dos parâmetros.

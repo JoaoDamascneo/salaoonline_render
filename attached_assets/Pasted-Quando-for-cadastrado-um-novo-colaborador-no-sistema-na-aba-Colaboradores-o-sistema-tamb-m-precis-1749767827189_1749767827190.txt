@@ -1,0 +1,36 @@
+Quando for cadastrado um novo colaborador no sistema (na aba Colaboradores), o sistema também precisa criar automaticamente um novo registro na tabela de usuários (users).
+
+⸻
+
+Regras para criação:
+	1.	Ao cadastrar um novo colaborador:
+	•	Criar o colaborador normalmente, como já está.
+	•	Além disso, criar também um novo usuário (user) na tabela de usuários.
+	2.	Esse novo usuário precisa conter:
+	•	nome = nome do colaborador
+	•	email = e-mail definido no cadastro do colaborador
+	•	senha = senha definida no cadastro do colaborador
+	•	estabelecimento_id = obrigatoriamente o mesmo estabelecimento (ID) do administrador que está realizando o cadastro
+	•	perfil = colaborador (para garantir as permissões corretas no painel)
+	•	Importante: garantir que não seja criado um usuário duplicado se o e-mail já existir.
+	3.	Conexão obrigatória entre o colaborador e o estabelecimento:
+	•	Esse novo usuário colaborador deve estar sempre vinculado ao estabelecimento_id da conta que o criou.
+	•	Isso garante que, ao fazer login, o sistema traga somente as informações do estabelecimento correspondente.
+	4.	Quando esse colaborador fizer login:
+	•	Ele acessará o painel com o perfil colaborador, seguindo todas as permissões específicas que já definimos:
+	•	Restrições no menu lateral
+	•	Financeiro → apenas salário/comissão dele
+	•	Configurações → apenas e-mail e senha
+	5.	Validação:
+	•	Confirmar que esse novo usuário é listado na tabela users.
+	•	Confirmar que o campo estabelecimento_id está correto e corresponde ao ID do administrador.
+	•	Ao logar com esse novo usuário, o painel precisa carregar as informações do estabelecimento correto, sem puxar informações de outros estabelecimentos.
+
+⸻
+
+📌 Fluxo esperado:
+	1.	Admin → Adiciona novo colaborador →
+	2.	Sistema cria:
+	•	Um registro em colaboradores
+	•	Um registro em users (conectado ao mesmo estabelecimento_id do administrador)
+	3.	Login → Sistema identifica perfil colaborador → Painel correto carregado (dados filtrados pelo estabelecimento_id).
