@@ -2092,52 +2092,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const appointmentData = insertAppointmentSchema.parse(transformedData);
       const appointment = await storage.createAppointment(appointmentData);
 
-      // Send WebSocket notification for appointment change
-      try {
-        const { wsManager } = await import("./websocket");
-        if (wsManager) {
-          wsManager.notifyAppointmentChange(establishmentId, {
-            type: 'created',
-            appointmentId: appointment.id,
-            clientId: appointment.clientId,
-            staffId: appointment.staffId,
-            serviceId: appointment.serviceId,
-            date: appointment.appointmentDate
-          });
-          
-          // Also send notification for new notification (since createAppointment creates a notification)
-          wsManager.notifyNewNotification(establishmentId, {
-            type: 'appointment',
-            appointmentId: appointment.id
-          });
-          
-          // Notify staff dashboard changes specifically
-          wsManager.notifyStaffDashboardChange(establishmentId, appointment.staffId, {
-            type: 'appointment_created',
-            appointmentId: appointment.id
-          });
-          
-          // Notify specific staff member about their new appointment (get client and service data)
-          try {
-            const [client, service] = await Promise.all([
-              storage.getClient(appointment.clientId, establishmentId),
-              storage.getService(appointment.serviceId, establishmentId)
-            ]);
-            
-            wsManager.notifyStaffAppointment(establishmentId, appointment.staffId, {
-              type: 'new_appointment',
-              appointmentId: appointment.id,
-              clientName: client?.name || 'Cliente',
-              serviceName: service?.name || 'Serviço',
-              appointmentDate: appointment.appointmentDate
-            });
-          } catch (notifyError) {
-            // Error getting client/service data for notification
-          }
-        }
-      } catch (wsError) {
-                  // WebSocket notification error logging removed for compute optimization
-      }
+      // NOTIFICAÇÕES AGORA SÃO AUTOMÁTICAS NO STORAGE
+      // Não é mais necessário enviar aqui, pois o storage já envia automaticamente
 
       // Enviar email de notificação para o estabelecimento
       try {
@@ -2301,34 +2257,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const appointment = await storage.updateAppointment(id, appointmentData);
             // Updated appointment logging removed for compute optimization
       
-      // Send WebSocket notification for appointment update
-      try {
-        const { wsManager } = await import("./websocket");
-        if (wsManager) {
-          wsManager.notifyAppointmentChange(establishmentId, {
-            type: 'updated',
-            appointmentId: id,
-            clientId: appointment.clientId,
-            staffId: appointment.staffId,
-            serviceId: appointment.serviceId,
-            date: appointment.appointmentDate
-          });
-          
-          // Notify staff dashboard changes specifically
-          wsManager.notifyStaffDashboardChange(establishmentId, appointment.staffId, {
-            type: 'appointment_updated',
-            appointmentId: id
-          });
-          
-          // Notify staff dashboard changes specifically
-          wsManager.notifyStaffDashboardChange(establishmentId, appointment.staffId, {
-            type: 'appointment_updated',
-            appointmentId: id
-          });
-        }
-      } catch (wsError) {
-                  // WebSocket notification error logging removed for compute optimization
-      }
+      // NOTIFICAÇÕES AGORA SÃO AUTOMÁTICAS NO STORAGE
+      // Não é mais necessário enviar aqui, pois o storage já envia automaticamente
       
       res.json(appointment);
     } catch (error) {
@@ -2410,47 +2340,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Send WebSocket notification for appointment status change
-      try {
-        const { wsManager } = await import("./websocket");
-        if (wsManager) {
-          wsManager.notifyAppointmentChange(establishmentId, {
-            type: 'status_changed',
-            appointmentId: id,
-            newStatus: status,
-            clientId: appointment.clientId,
-            staffId: appointment.staffId
-          });
-          
-          // If completed and financial transaction created, also notify financial change
-          if ((currentAppointment.status === "scheduled" || currentAppointment.status === "agendado") && 
-              (status === "completed" || status === "realizado")) {
-            
-            // Get service details for the notification
-            const service = await storage.getService(currentAppointment.serviceId, establishmentId);
-            const servicePrice = service?.price || 0;
-            
-                        // Financial notification sending logging removed for compute optimization
-            wsManager.notifyFinancialChange(establishmentId, {
-              type: 'income_from_appointment',
-              appointmentId: id,
-              amount: servicePrice,
-              serviceName: service?.name || 'Serviço'
-            });
-            
-            // Also notify dashboard stats update
-            // Dashboard notification log removed for compute optimization
-            wsManager.notifyDashboardStatsChange(establishmentId, {
-              type: 'appointment_revenue_update',
-              reason: 'appointment_completed',
-              appointmentId: id,
-              amount: servicePrice
-            });
-          }
-        }
-      } catch (wsError) {
-                  // WebSocket notification error logging removed for compute optimization
-      }
+      // NOTIFICAÇÕES AGORA SÃO AUTOMÁTICAS NO STORAGE
+      // Não é mais necessário enviar aqui, pois o storage já envia automaticamente
       
       res.json(appointment);
     } catch (error) {
@@ -2475,25 +2366,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       await storage.deleteAppointment(id);
       
-      // Send WebSocket notification for appointment deletion
-      try {
-        const { wsManager } = await import("./websocket");
-        if (wsManager) {
-          wsManager.notifyAppointmentChange(establishmentId, {
-            type: 'deleted',
-            appointmentId: id,
-            staffId: appointment.staffId
-          });
-          
-          // Notify staff dashboard changes specifically
-          wsManager.notifyStaffDashboardChange(establishmentId, appointment.staffId, {
-            type: 'appointment_deleted',
-            appointmentId: id
-          });
-        }
-      } catch (wsError) {
-        // WebSocket notification error logging removed for compute optimization
-      }
+      // NOTIFICAÇÕES AGORA SÃO AUTOMÁTICAS NO STORAGE
+      // Não é mais necessário enviar aqui, pois o storage já envia automaticamente
       
       res.json({ success: true, message: "Appointment deleted successfully" });
     } catch (error) {
@@ -4009,28 +3883,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const appointment = await storage.createAppointment(newAppointmentData);
       // Evolution API appointment creation logging removed for compute optimization
 
-      // Send WebSocket notification for appointment change
-      try {
-        const { wsManager } = await import("./websocket");
-        if (wsManager) {
-          wsManager.notifyAppointmentChange(parseInt(establishmentId), {
-            type: 'created_evolution',
-            appointmentId: appointment.id,
-            clientId,
-            staffId: staffId,
-            serviceId: serviceId,
-            date: appointment.appointmentDate
-          });
-          
-          // Also send notification for new notification
-          wsManager.notifyNewNotification(parseInt(establishmentId), {
-            type: 'appointment',
-            appointmentId: appointment.id
-          });
-        }
-      } catch (wsError) {
-                  // WebSocket notification error logging removed for compute optimization
-      }
+      // NOTIFICAÇÕES AGORA SÃO AUTOMÁTICAS NO STORAGE
+      // Não é mais necessário enviar aqui, pois o storage já envia automaticamente
 
       // Disparar webhook N8N se configurado
       try {

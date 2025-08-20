@@ -701,6 +701,46 @@ export class DatabaseStorage implements IStorage {
     
     await this.createNotification(notification);
     
+    // NOTIFICAÇÕES WEBSOCKET AUTOMÁTICAS APÓS CRIAÇÃO NO BANCO
+    try {
+      const { wsManager } = await import("./websocket");
+      if (wsManager) {
+        // 1. Notificação de mudança de agendamento
+        wsManager.notifyAppointmentChange(appointment.establishmentId, {
+          type: 'created',
+          appointmentId: appointment.id,
+          clientId: appointment.clientId,
+          staffId: appointment.staffId,
+          serviceId: appointment.serviceId,
+          date: appointment.appointmentDate
+        });
+        
+        // 2. Notificação de nova notificação
+        wsManager.notifyNewNotification(appointment.establishmentId, {
+          type: 'appointment',
+          appointmentId: appointment.id
+        });
+        
+        // 3. Notificação específica para staff
+        wsManager.notifyStaffDashboardChange(appointment.establishmentId, appointment.staffId, {
+          type: 'appointment_created',
+          appointmentId: appointment.id
+        });
+        
+        // 4. Notificação detalhada para staff
+        wsManager.notifyStaffAppointment(appointment.establishmentId, appointment.staffId, {
+          type: 'new_appointment',
+          appointmentId: appointment.id,
+          clientName: client?.name || 'Cliente',
+          serviceName: service?.name || 'Serviço',
+          appointmentDate: appointment.appointmentDate
+        });
+      }
+    } catch (wsError) {
+      console.error("WebSocket notification error in createAppointment:", wsError);
+      // Não falhar a criação do agendamento por erro de WebSocket
+    }
+    
     return appointment;
   }
 
@@ -710,10 +750,66 @@ export class DatabaseStorage implements IStorage {
       .set(updateData)
       .where(eq(appointments.id, id))
       .returning();
+    
+    // NOTIFICAÇÕES WEBSOCKET AUTOMÁTICAS APÓS ATUALIZAÇÃO NO BANCO
+    try {
+      const { wsManager } = await import("./websocket");
+      if (wsManager) {
+        // 1. Notificação de mudança de agendamento
+        wsManager.notifyAppointmentChange(appointment.establishmentId, {
+          type: 'updated',
+          appointmentId: id,
+          clientId: appointment.clientId,
+          staffId: appointment.staffId,
+          serviceId: appointment.serviceId,
+          date: appointment.appointmentDate
+        });
+        
+        // 2. Notificação específica para staff
+        wsManager.notifyStaffDashboardChange(appointment.establishmentId, appointment.staffId, {
+          type: 'appointment_updated',
+          appointmentId: id
+        });
+      }
+    } catch (wsError) {
+      console.error("WebSocket notification error in updateAppointment:", wsError);
+      // Não falhar a atualização do agendamento por erro de WebSocket
+    }
+    
     return appointment;
   }
 
   async deleteAppointment(id: number): Promise<void> {
+    // Buscar informações do agendamento antes de deletar
+    const [appointment] = await db
+      .select()
+      .from(appointments)
+      .where(eq(appointments.id, id));
+    
+    if (appointment) {
+      // NOTIFICAÇÕES WEBSOCKET ANTES DE DELETAR
+      try {
+        const { wsManager } = await import("./websocket");
+        if (wsManager) {
+          // 1. Notificação de exclusão
+          wsManager.notifyAppointmentChange(appointment.establishmentId, {
+            type: 'deleted',
+            appointmentId: id,
+            staffId: appointment.staffId
+          });
+          
+          // 2. Notificação específica para staff
+          wsManager.notifyStaffDashboardChange(appointment.establishmentId, appointment.staffId, {
+            type: 'appointment_deleted',
+            appointmentId: id
+          });
+        }
+      } catch (wsError) {
+        console.error("WebSocket notification error in deleteAppointment:", wsError);
+        // Não falhar a exclusão por erro de WebSocket
+      }
+    }
+    
     // First, delete any notifications related to this appointment
     await db.delete(notifications).where(eq(notifications.appointmentId, id));
     // Then delete the appointment
@@ -1013,6 +1109,45 @@ export class DatabaseStorage implements IStorage {
       .set({ status, updatedAt: new Date() })
       .where(and(eq(appointments.id, id), eq(appointments.establishmentId, establishmentId)))
       .returning();
+    
+    // NOTIFICAÇÕES WEBSOCKET AUTOMÁTICAS APÓS MUDANÇA DE STATUS
+    try {
+      const { wsManager } = await import("./websocket");
+      if (wsManager) {
+        // 1. Notificação de mudança de status
+        wsManager.notifyAppointmentChange(establishmentId, {
+          type: 'status_changed',
+          appointmentId: id,
+          newStatus: status,
+          clientId: appointment.clientId,
+          staffId: appointment.staffId
+        });
+        
+        // 2. Se completado, notificar mudanças financeiras
+        if (status === "completed" || status === "realizado") {
+          const service = await this.getService(appointment.serviceId, establishmentId);
+          const servicePrice = service?.price || 0;
+          
+          wsManager.notifyFinancialChange(establishmentId, {
+            type: 'income_from_appointment',
+            appointmentId: id,
+            amount: servicePrice,
+            serviceName: service?.name || 'Serviço'
+          });
+          
+          wsManager.notifyDashboardStatsChange(establishmentId, {
+            type: 'appointment_revenue_update',
+            reason: 'appointment_completed',
+            appointmentId: id,
+            amount: servicePrice
+          });
+        }
+      }
+    } catch (wsError) {
+      console.error("WebSocket notification error in updateAppointmentStatus:", wsError);
+      // Não falhar a mudança de status por erro de WebSocket
+    }
+    
     return appointment;
   }
 

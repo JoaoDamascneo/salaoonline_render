@@ -2932,53 +2932,8 @@ app.get('/health', async (req, res) => {
         notes: appointmentData.notes || ""
       });
 
-      // Send WebSocket notification for appointment change
-      try {
-        const { wsManager } = await import("./websocket");
-        if (wsManager) {
-          wsManager.notifyAppointmentChange(establishmentId, {
-            type: 'created',
-            appointmentId: appointment.id,
-            clientId: appointment.clientId,
-            staffId: appointment.staffId,
-            serviceId: appointment.serviceId,
-            date: appointment.appointmentDate
-          });
-          
-          // Also send notification for new notification
-          wsManager.notifyNewNotification(establishmentId, {
-            type: 'appointment',
-            appointmentId: appointment.id
-          });
-          
-          // Notify staff dashboard changes specifically
-          wsManager.notifyStaffDashboardChange(establishmentId, appointment.staffId, {
-            type: 'appointment_created',
-            appointmentId: appointment.id
-          });
-          
-          // Notify specific staff member about their new appointment
-          try {
-            const [client, service] = await Promise.all([
-              storage.getClient(appointment.clientId, establishmentId),
-              storage.getService(appointment.serviceId, establishmentId)
-            ]);
-            
-            wsManager.notifyStaffAppointment(establishmentId, appointment.staffId, {
-              type: 'new_appointment',
-              appointmentId: appointment.id,
-              clientName: client?.name || 'Cliente',
-              serviceName: service?.name || 'Serviço',
-              appointmentDate: appointment.appointmentDate
-            });
-          } catch (notifyError) {
-            console.error("Error getting client/service data for notification:", notifyError);
-          }
-        }
-      } catch (wsError) {
-        console.error("WebSocket notification error:", wsError);
-        // Não falhar a requisição por erro de WebSocket
-      }
+      // NOTIFICAÇÕES AGORA SÃO AUTOMÁTICAS NO STORAGE
+      // Não é mais necessário enviar aqui, pois o storage já envia automaticamente
 
       res.json({
         success: true,
