@@ -5493,163 +5493,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Webhook para próximos agendamentos de clientes (30 minutos antes do serviço)
-  app.get("/webhook/upcoming-appointments/:establishmentId", async (req, res) => {
+  // Webhook principal para lembretes de agendamentos próximos (30 minutos antes)
+  app.get("/webhook/lembrete", async (req, res) => {
     try {
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Access-Control-Allow-Origin', '*');
       
-      const establishmentId = parseInt(req.params.establishmentId);
+      // Buscar todos os estabelecimentos
+      const establishments = await storage.getAllEstablishments();
       
-      if (isNaN(establishmentId)) {
-        return res.status(400).json({
-          success: false,
-          error: "Establishment ID deve ser um número válido"
-        });
-      }
-
-      // Verificar se o estabelecimento existe
-      const establishment = await storage.getEstablishment(establishmentId);
-      if (!establishment) {
-        return res.status(404).json({
-          success: false,
-          error: "Estabelecimento não encontrado"
-        });
-      }
-      
-      // Buscar o próximo agendamento de cada cliente que está próximo de 30 minutos
-      const nextAppointments = await storage.getNextUpcomingAppointments(establishmentId);
-      
-      // Formatar os dados para o webhook - foco no próximo agendamento de cada cliente
-      const formattedAppointments = nextAppointments.map(appointment => ({
-        appointment_id: appointment.id,
-        appointment_date: appointment.appointmentDate,
-        appointment_time: new Date(appointment.appointmentDate).toLocaleTimeString('pt-BR', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        }),
-        appointment_date_formatted: new Date(appointment.appointmentDate).toLocaleDateString('pt-BR'),
-        staff_name: appointment.staffName,
-        service_name: appointment.serviceName,
-        establishment_id: appointment.establishmentId,
-        establishment_name: appointment.establishmentName,
-        client_name: appointment.clientName,
-        client_id: appointment.clientId,
-        client_phone: appointment.clientPhone, // Telefone para envio de mensagem
-        client_email: appointment.clientEmail,
-        duration: appointment.duration,
-        service_price: appointment.servicePrice,
-        status: appointment.status,
-        notes: appointment.notes
-      }));
-      
-      res.json({
-        success: true,
-        establishment_id: establishmentId,
-        establishment_name: establishment.name,
-        total_clients: formattedAppointments.length,
-        appointments: formattedAppointments,
-        timestamp: new Date().toISOString(),
-        message: `Encontrados ${formattedAppointments.length} cliente(s) com agendamento próximo de 30 minutos`
-      });
-      
-    } catch (error) {
-      console.error("Erro no webhook de próximos agendamentos:", error);
-      res.status(500).json({
-        success: false,
-        error: "Erro interno do servidor",
-        message: error instanceof Error ? error.message : "Erro desconhecido"
-      });
-    }
-  });
-
-  // Webhook para próximo agendamento de um cliente específico
-  app.get("/webhook/upcoming-appointments/:establishmentId/:clientId", async (req, res) => {
-    try {
-      res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      
-      const establishmentId = parseInt(req.params.establishmentId);
-      const clientId = parseInt(req.params.clientId);
-      
-      if (isNaN(establishmentId) || isNaN(clientId)) {
-        return res.status(400).json({
-          success: false,
-          error: "Establishment ID e Client ID devem ser números válidos"
-        });
-      }
-
-      // Verificar se o estabelecimento existe
-      const establishment = await storage.getEstablishment(establishmentId);
-      if (!establishment) {
-        return res.status(404).json({
-          success: false,
-          error: "Estabelecimento não encontrado"
-        });
-      }
-
-      // Verificar se o cliente existe e pertence ao estabelecimento
-      const client = await storage.getClient(clientId, establishmentId);
-      if (!client) {
-        return res.status(404).json({
-          success: false,
-          error: "Cliente não encontrado neste estabelecimento"
-        });
-      }
-      
-      // Buscar o próximo agendamento deste cliente específico
-      const nextAppointments = await storage.getNextUpcomingAppointments(establishmentId);
-      const clientAppointment = nextAppointments.find(apt => apt.clientId === clientId);
-      
-      if (!clientAppointment) {
+      if (!establishments || establishments.length === 0) {
         return res.json({
           success: true,
-          establishment_id: establishmentId,
-          establishment_name: establishment.name,
-          client_id: clientId,
-          client_name: client.name,
-          has_upcoming_appointment: false,
-          message: "Cliente não possui agendamento próximo de 30 minutos"
+          total_lembretes: 0,
+          lembretes: [],
+          timestamp: new Date().toISOString(),
+          message: "Nenhum estabelecimento encontrado"
         });
       }
       
-      // Formatar os dados para o webhook
-      const formattedAppointment = {
-        appointment_id: clientAppointment.id,
-        appointment_date: clientAppointment.appointmentDate,
-        appointment_time: new Date(clientAppointment.appointmentDate).toLocaleTimeString('pt-BR', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        }),
-        appointment_date_formatted: new Date(clientAppointment.appointmentDate).toLocaleDateString('pt-BR'),
-        staff_name: clientAppointment.staffName,
-        service_name: clientAppointment.serviceName,
-        establishment_id: clientAppointment.establishmentId,
-        establishment_name: clientAppointment.establishmentName,
-        client_name: clientAppointment.clientName,
-        client_id: clientAppointment.clientId,
-        client_phone: clientAppointment.clientPhone, // Telefone para envio de mensagem
-        client_email: clientAppointment.clientEmail,
-        duration: clientAppointment.duration,
-        service_price: clientAppointment.servicePrice,
-        status: clientAppointment.status,
-        notes: clientAppointment.notes
-      };
+      // Array para armazenar todos os lembretes
+      const todosLembretes = [];
+      
+      // Para cada estabelecimento, buscar agendamentos próximos
+      for (const establishment of establishments) {
+        try {
+          const nextAppointments = await storage.getNextUpcomingAppointments(establishment.id);
+          
+          // Formatar os lembretes para este estabelecimento
+          const lembretesEstabelecimento = nextAppointments.map(appointment => ({
+            // Informações do Cliente
+            cliente_nome: appointment.clientName,
+            cliente_id: appointment.clientId,
+            cliente_telefone: appointment.clientPhone,
+            cliente_email: appointment.clientEmail,
+            
+            // Informações do Estabelecimento
+            estabelecimento_nome: appointment.establishmentName,
+            estabelecimento_id: appointment.establishmentId,
+            
+            // Informações do Serviço
+            servico_nome: appointment.serviceName,
+            servico_preco: appointment.servicePrice,
+            servico_duracao: appointment.duration,
+            
+            // Informações do Profissional
+            profissional_nome: appointment.staffName,
+            
+            // Informações do Agendamento
+            agendamento_id: appointment.id,
+            agendamento_data: new Date(appointment.appointmentDate).toLocaleDateString('pt-BR'),
+            agendamento_hora: new Date(appointment.appointmentDate).toLocaleTimeString('pt-BR', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            }),
+            agendamento_data_completa: appointment.appointmentDate,
+            agendamento_status: appointment.status,
+            agendamento_observacoes: appointment.notes || ''
+          }));
+          
+          todosLembretes.push(...lembretesEstabelecimento);
+          
+        } catch (error) {
+          console.error(`Erro ao buscar agendamentos do estabelecimento ${establishment.id}:`, error);
+          // Continuar com outros estabelecimentos mesmo se um falhar
+        }
+      }
       
       res.json({
         success: true,
-        establishment_id: establishmentId,
-        establishment_name: establishment.name,
-        client_id: clientId,
-        client_name: client.name,
-        has_upcoming_appointment: true,
-        appointment: formattedAppointment,
+        total_lembretes: todosLembretes.length,
+        lembretes: todosLembretes,
         timestamp: new Date().toISOString(),
-        message: "Próximo agendamento do cliente encontrado"
+        message: `Encontrados ${todosLembretes.length} lembrete(s) de agendamentos próximos de 30 minutos`
       });
       
     } catch (error) {
-      console.error("Erro no webhook de próximo agendamento do cliente:", error);
+      console.error("Erro no webhook de lembretes:", error);
       res.status(500).json({
         success: false,
         error: "Erro interno do servidor",

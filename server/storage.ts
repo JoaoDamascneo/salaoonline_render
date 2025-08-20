@@ -84,6 +84,7 @@ export interface IStorage {
   // Establishment operations
   getEstablishment(id: number): Promise<Establishment | undefined>;
   getEstablishmentByEmail(email: string): Promise<Establishment | undefined>;
+  getAllEstablishments(): Promise<Establishment[]>;
   createEstablishment(establishment: InsertEstablishment): Promise<Establishment>;
 
   // User operations
@@ -285,6 +286,10 @@ export class DatabaseStorage implements IStorage {
   async getEstablishmentByEmail(email: string): Promise<Establishment | undefined> {
     const [establishment] = await db.select().from(establishments).where(eq(establishments.email, email));
     return establishment || undefined;
+  }
+
+  async getAllEstablishments(): Promise<Establishment[]> {
+    return await db.select().from(establishments).orderBy(establishments.name);
   }
 
   async createEstablishment(insertEstablishment: InsertEstablishment): Promise<Establishment> {
