@@ -292,6 +292,86 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(establishments).orderBy(establishments.name);
   }
 
+  // Agendar lembrete automático para 30 minutos antes do agendamento
+  private async scheduleLembrete(appointment: Appointment, client: Client | undefined, service: Service | undefined, staffMember: Staff | undefined) {
+    const appointmentDate = new Date(appointment.appointmentDate);
+    const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000); // 30 minutos antes
+    
+    // Se o lembrete já deveria ter sido enviado, não agendar
+    if (lembreteTime <= new Date()) {
+      console.log(`Lembrete para agendamento ${appointment.id} já deveria ter sido enviado`);
+      return;
+    }
+    
+    // Calcular delay em milissegundos
+    const delay = lembreteTime.getTime() - new Date().getTime();
+    
+    // Agendar o envio do lembrete
+    setTimeout(async () => {
+      try {
+        await this.enviarLembreteN8N(appointment, client, service, staffMember);
+      } catch (error) {
+        console.error(`Erro ao enviar lembrete para agendamento ${appointment.id}:`, error);
+      }
+    }, delay);
+    
+    console.log(`Lembrete agendado para agendamento ${appointment.id} em ${new Date(lembreteTime).toLocaleString('pt-BR')}`);
+  }
+
+  // Enviar lembrete para o N8N
+  private async enviarLembreteN8N(appointment: Appointment, client: Client | undefined, service: Service | undefined, staffMember: Staff | undefined) {
+    const establishment = await this.getEstablishment(appointment.establishmentId);
+    
+    const lembreteData = {
+      cliente_nome: client?.name || 'Cliente',
+      cliente_id: appointment.clientId,
+      cliente_telefone: client?.phone || '',
+      cliente_email: client?.email || '',
+      estabelecimento_nome: establishment?.name || 'Estabelecimento',
+      estabelecimento_id: appointment.establishmentId,
+      servico_nome: service?.name || 'Serviço',
+      servico_preco: service?.price || '0.00',
+      servico_duracao: appointment.duration,
+      profissional_nome: staffMember?.name || 'Profissional',
+      agendamento_id: appointment.id,
+      agendamento_data: new Date(appointment.appointmentDate).toLocaleDateString('pt-BR'),
+      agendamento_hora: new Date(appointment.appointmentDate).toLocaleTimeString('pt-BR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      }),
+      agendamento_data_completa: appointment.appointmentDate,
+      agendamento_status: appointment.status,
+      agendamento_observacoes: appointment.notes || ''
+    };
+
+    const n8nWebhookUrl = 'https://n8n-n8n-start.ayp7v6.easypanel.host/webhook/lembrete';
+    
+    try {
+      const response = await fetch(n8nWebhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          success: true,
+          total_lembretes: 1,
+          lembretes: [lembreteData],
+          timestamp: new Date().toISOString(),
+          message: `Lembrete automático enviado para ${client?.name || 'Cliente'}`
+        })
+      });
+      
+      if (response.ok) {
+        console.log(`✅ Lembrete enviado com sucesso para o N8N - Cliente: ${client?.name}, Agendamento: ${appointment.id}`);
+      } else {
+        console.error(`❌ Erro ao enviar lembrete para o N8N. Status: ${response.status}`);
+      }
+      
+    } catch (error) {
+      console.error("❌ Erro ao enviar lembrete para o N8N:", error);
+    }
+  }
+
   async createEstablishment(insertEstablishment: InsertEstablishment): Promise<Establishment> {
     const [establishment] = await db
       .insert(establishments)
@@ -846,6 +926,14 @@ export class DatabaseStorage implements IStorage {
     } catch (wsError) {
       console.error("WebSocket notification error in createAppointment:", wsError);
       // Não falhar a criação do agendamento por erro de WebSocket
+    }
+    
+    // AGENDAR LEMBRETE AUTOMÁTICO PARA 30 MINUTOS ANTES
+    try {
+      await this.scheduleLembrete(appointment, client, service, staffMember);
+    } catch (lembreteError) {
+      console.error("Erro ao agendar lembrete:", lembreteError);
+      // Não falhar a criação do agendamento por erro de lembrete
     }
     
     return appointment;

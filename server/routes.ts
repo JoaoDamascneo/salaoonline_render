@@ -5560,16 +5560,159 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // URL do N8N para onde enviar os dados
+      const n8nWebhookUrl = 'https://n8n-n8n-start.ayp7v6.easypanel.host/webhook/lembrete';
+      
+      // Enviar dados para o N8N automaticamente
+      try {
+        const response = await fetch(n8nWebhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            success: true,
+            total_lembretes: todosLembretes.length,
+            lembretes: todosLembretes,
+            timestamp: new Date().toISOString(),
+            message: `Encontrados ${todosLembretes.length} lembrete(s) de agendamentos próximos de 30 minutos`
+          })
+        });
+        
+        if (response.ok) {
+          console.log(`✅ Dados enviados com sucesso para o N8N. Total de lembretes: ${todosLembretes.length}`);
+        } else {
+          console.error(`❌ Erro ao enviar dados para o N8N. Status: ${response.status}`);
+        }
+        
+      } catch (n8nError) {
+        console.error("❌ Erro ao enviar dados para o N8N:", n8nError);
+      }
+      
       res.json({
         success: true,
         total_lembretes: todosLembretes.length,
         lembretes: todosLembretes,
         timestamp: new Date().toISOString(),
-        message: `Encontrados ${todosLembretes.length} lembrete(s) de agendamentos próximos de 30 minutos`
+        message: `Encontrados ${todosLembretes.length} lembrete(s) de agendamentos próximos de 30 minutos e enviados para o N8N`
       });
       
     } catch (error) {
       console.error("Erro no webhook de lembretes:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
+  // Endpoint para enviar lembretes automaticamente para o N8N
+  app.post("/webhook/enviar-lembretes-n8n", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      // Buscar todos os estabelecimentos
+      const establishments = await storage.getAllEstablishments();
+      
+      if (!establishments || establishments.length === 0) {
+        return res.json({
+          success: true,
+          total_lembretes: 0,
+          lembretes: [],
+          timestamp: new Date().toISOString(),
+          message: "Nenhum estabelecimento encontrado"
+        });
+      }
+      
+      // Array para armazenar todos os lembretes
+      const todosLembretes = [];
+      
+      // Para cada estabelecimento, buscar agendamentos próximos
+      for (const establishment of establishments) {
+        try {
+          const nextAppointments = await storage.getNextUpcomingAppointments(establishment.id);
+          
+          // Formatar os lembretes para este estabelecimento
+          const lembretesEstabelecimento = nextAppointments.map(appointment => ({
+            // Informações do Cliente
+            cliente_nome: appointment.clientName,
+            cliente_id: appointment.clientId,
+            cliente_telefone: appointment.clientPhone,
+            cliente_email: appointment.clientEmail,
+            
+            // Informações do Estabelecimento
+            estabelecimento_nome: appointment.establishmentName,
+            estabelecimento_id: appointment.establishmentId,
+            
+            // Informações do Serviço
+            servico_nome: appointment.serviceName,
+            servico_preco: appointment.servicePrice,
+            servico_duracao: appointment.duration,
+            
+            // Informações do Profissional
+            profissional_nome: appointment.staffName,
+            
+            // Informações do Agendamento
+            agendamento_id: appointment.id,
+            agendamento_data: new Date(appointment.appointmentDate).toLocaleDateString('pt-BR'),
+            agendamento_hora: new Date(appointment.appointmentDate).toLocaleTimeString('pt-BR', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            }),
+            agendamento_data_completa: appointment.appointmentDate,
+            agendamento_status: appointment.status,
+            agendamento_observacoes: appointment.notes || ''
+          }));
+          
+          todosLembretes.push(...lembretesEstabelecimento);
+          
+        } catch (error) {
+          console.error(`Erro ao buscar agendamentos do estabelecimento ${establishment.id}:`, error);
+          // Continuar com outros estabelecimentos mesmo se um falhar
+        }
+      }
+      
+      // URL do N8N para onde enviar os dados
+      const n8nWebhookUrl = 'https://n8n-n8n-start.ayp7v6.easypanel.host/webhook/lembrete';
+      
+      // Enviar dados para o N8N
+      try {
+        const response = await fetch(n8nWebhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            success: true,
+            total_lembretes: todosLembretes.length,
+            lembretes: todosLembretes,
+            timestamp: new Date().toISOString(),
+            message: `Encontrados ${todosLembretes.length} lembrete(s) de agendamentos próximos de 30 minutos`
+          })
+        });
+        
+        if (response.ok) {
+          console.log(`✅ Dados enviados com sucesso para o N8N. Total de lembretes: ${todosLembretes.length}`);
+        } else {
+          console.error(`❌ Erro ao enviar dados para o N8N. Status: ${response.status}`);
+        }
+        
+      } catch (n8nError) {
+        console.error("❌ Erro ao enviar dados para o N8N:", n8nError);
+      }
+      
+      res.json({
+        success: true,
+        total_lembretes: todosLembretes.length,
+        lembretes: todosLembretes,
+        timestamp: new Date().toISOString(),
+        message: `Encontrados ${todosLembretes.length} lembrete(s) e enviados para o N8N`
+      });
+      
+    } catch (error) {
+      console.error("Erro no webhook de envio para N8N:", error);
       res.status(500).json({
         success: false,
         error: "Erro interno do servidor",
