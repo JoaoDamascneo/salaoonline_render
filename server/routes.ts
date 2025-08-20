@@ -5563,6 +5563,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Webhook para próximo agendamento de um cliente específico
+  app.get("/webhook/upcoming-appointments/:establishmentId/:clientId", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      const establishmentId = parseInt(req.params.establishmentId);
+      const clientId = parseInt(req.params.clientId);
+      
+      if (isNaN(establishmentId) || isNaN(clientId)) {
+        return res.status(400).json({
+          success: false,
+          error: "Establishment ID e Client ID devem ser números válidos"
+        });
+      }
+
+      // Verificar se o estabelecimento existe
+      const establishment = await storage.getEstablishment(establishmentId);
+      if (!establishment) {
+        return res.status(404).json({
+          success: false,
+          error: "Estabelecimento não encontrado"
+        });
+      }
+
+      // Verificar se o cliente existe e pertence ao estabelecimento
+      const client = await storage.getClient(clientId, establishmentId);
+      if (!client) {
+        return res.status(404).json({
+          success: false,
+          error: "Cliente não encontrado neste estabelecimento"
+        });
+      }
+      
+      // Buscar o próximo agendamento deste cliente específico
+      const nextAppointments = await storage.getNextUpcomingAppointments(establishmentId);
+      const clientAppointment = nextAppointments.find(apt => apt.clientId === clientId);
+      
+      if (!clientAppointment) {
+        return res.json({
+          success: true,
+          establishment_id: establishmentId,
+          establishment_name: establishment.name,
+          client_id: clientId,
+          client_name: client.name,
+          has_upcoming_appointment: false,
+          message: "Cliente não possui agendamento próximo de 30 minutos"
+        });
+      }
+      
+      // Formatar os dados para o webhook
+      const formattedAppointment = {
+        appointment_id: clientAppointment.id,
+        appointment_date: clientAppointment.appointmentDate,
+        appointment_time: new Date(clientAppointment.appointmentDate).toLocaleTimeString('pt-BR', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        appointment_date_formatted: new Date(clientAppointment.appointmentDate).toLocaleDateString('pt-BR'),
+        staff_name: clientAppointment.staffName,
+        service_name: clientAppointment.serviceName,
+        establishment_id: clientAppointment.establishmentId,
+        establishment_name: clientAppointment.establishmentName,
+        client_name: clientAppointment.clientName,
+        client_id: clientAppointment.clientId,
+        client_phone: clientAppointment.clientPhone, // Telefone para envio de mensagem
+        client_email: clientAppointment.clientEmail,
+        duration: clientAppointment.duration,
+        service_price: clientAppointment.servicePrice,
+        status: clientAppointment.status,
+        notes: clientAppointment.notes
+      };
+      
+      res.json({
+        success: true,
+        establishment_id: establishmentId,
+        establishment_name: establishment.name,
+        client_id: clientId,
+        client_name: client.name,
+        has_upcoming_appointment: true,
+        appointment: formattedAppointment,
+        timestamp: new Date().toISOString(),
+        message: "Próximo agendamento do cliente encontrado"
+      });
+      
+    } catch (error) {
+      console.error("Erro no webhook de próximo agendamento do cliente:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Initialize WebSocket server

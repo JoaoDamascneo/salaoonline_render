@@ -4,23 +4,36 @@
 
 Este webhook retorna o **próximo agendamento** de cada cliente que está próximo de 30 minutos do horário agendado, fornecendo informações completas incluindo o telefone do cliente para envio de lembretes automáticos.
 
-## Endpoint
+## Endpoints Disponíveis
+
+### 1. Todos os Clientes com Agendamentos Próximos
 
 **GET** `/webhook/upcoming-appointments/:establishmentId`
 
-### Parâmetros
-
+#### Parâmetros
 - `establishmentId` (obrigatório): ID do estabelecimento
 
-### Exemplo de URL
-
+#### Exemplo de URL
 ```
 https://salaoonline-render.onrender.com/webhook/upcoming-appointments/1
 ```
 
-## Resposta
+### 2. Cliente Específico com Próximo Agendamento
 
-### Sucesso (200)
+**GET** `/webhook/upcoming-appointments/:establishmentId/:clientId`
+
+#### Parâmetros
+- `establishmentId` (obrigatório): ID do estabelecimento
+- `clientId` (obrigatório): ID do cliente específico
+
+#### Exemplo de URL
+```
+https://salaoonline-render.onrender.com/webhook/upcoming-appointments/1/45
+```
+
+## Respostas
+
+### 1. Todos os Clientes (Sucesso 200)
 
 ```json
 {
@@ -50,6 +63,53 @@ https://salaoonline-render.onrender.com/webhook/upcoming-appointments/1
   ],
   "timestamp": "2025-01-15T14:00:00.000Z",
   "message": "Encontrados 2 cliente(s) com agendamento próximo de 30 minutos"
+}
+```
+
+### 2. Cliente Específico (Sucesso 200)
+
+#### Com Agendamento Próximo
+```json
+{
+  "success": true,
+  "establishment_id": 1,
+  "establishment_name": "Salão da Maria",
+  "client_id": 45,
+  "client_name": "João Santos",
+  "has_upcoming_appointment": true,
+  "appointment": {
+    "appointment_id": 123,
+    "appointment_date": "2025-01-15T14:30:00.000Z",
+    "appointment_time": "14:30",
+    "appointment_date_formatted": "15/01/2025",
+    "staff_name": "Maria Silva",
+    "service_name": "Corte de Cabelo",
+    "establishment_id": 1,
+    "establishment_name": "Salão da Maria",
+    "client_name": "João Santos",
+    "client_id": 45,
+    "client_phone": "11999999999",
+    "client_email": "joao@email.com",
+    "duration": 30,
+    "service_price": "25.00",
+    "status": "confirmed",
+    "notes": "Cliente preferência por cabelo mais curto"
+  },
+  "timestamp": "2025-01-15T14:00:00.000Z",
+  "message": "Próximo agendamento do cliente encontrado"
+}
+```
+
+#### Sem Agendamento Próximo
+```json
+{
+  "success": true,
+  "establishment_id": 1,
+  "establishment_name": "Salão da Maria",
+  "client_id": 45,
+  "client_name": "João Santos",
+  "has_upcoming_appointment": false,
+  "message": "Cliente não possui agendamento próximo de 30 minutos"
 }
 ```
 
@@ -104,16 +164,23 @@ O webhook retorna o **próximo agendamento** de cada cliente que atende aos segu
 ## Casos de Uso
 
 ### 1. Lembretes Automáticos por SMS/WhatsApp
-Use este webhook para enviar lembretes automáticos aos clientes 30 minutos antes do agendamento, utilizando o telefone retornado.
+- **Endpoint 1**: Use para enviar lembretes em massa a todos os clientes com agendamentos próximos
+- **Endpoint 2**: Use para enviar lembrete específico a um cliente determinado
 
 ### 2. Lembretes por Email
-Envie lembretes por email usando o campo `client_email` retornado.
+- **Endpoint 1**: Envie lembretes por email em massa
+- **Endpoint 2**: Envie lembrete por email a um cliente específico
 
 ### 3. Preparação da Equipe
-Notifique a equipe sobre clientes que estão chegando em breve.
+- **Endpoint 1**: Notifique a equipe sobre todos os clientes que estão chegando em breve
+- **Endpoint 2**: Notifique sobre um cliente específico
 
 ### 4. Integração com N8N
-Configure workflows no N8N para processar automaticamente os próximos agendamentos de cada cliente.
+- **Endpoint 1**: Configure workflows para processar automaticamente todos os próximos agendamentos
+- **Endpoint 2**: Configure workflows para processar agendamentos de clientes específicos
+
+### 5. Verificação Individual
+- **Endpoint 2**: Ideal para verificar se um cliente específico tem agendamento próximo
 
 ## Exemplo de Integração com N8N
 
@@ -162,12 +229,18 @@ if (appointments && appointments.length > 0) {
 }
 ```
 
-## Teste do Webhook
+## Teste dos Webhooks
 
-Execute o script de teste incluído:
+Execute os scripts de teste incluídos:
 
+### Teste de Todos os Clientes
 ```bash
 node teste-webhook-agendamentos-proximos.js
+```
+
+### Teste de Cliente Específico
+```bash
+node teste-webhook-cliente-especifico.js
 ```
 
 ## Observações Importantes
