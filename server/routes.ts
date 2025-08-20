@@ -5493,7 +5493,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Webhook para agendamentos próximos (30 minutos antes do serviço)
+  // Webhook para próximos agendamentos de clientes (30 minutos antes do serviço)
   app.get("/webhook/upcoming-appointments/:establishmentId", async (req, res) => {
     try {
       res.setHeader('Content-Type', 'application/json');
@@ -5517,11 +5517,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Buscar agendamentos próximos de 30 minutos
-      const upcomingAppointments = await storage.getUpcomingAppointments(establishmentId);
+      // Buscar o próximo agendamento de cada cliente que está próximo de 30 minutos
+      const nextAppointments = await storage.getNextUpcomingAppointments(establishmentId);
       
-      // Formatar os dados para o webhook
-      const formattedAppointments = upcomingAppointments.map(appointment => ({
+      // Formatar os dados para o webhook - foco no próximo agendamento de cada cliente
+      const formattedAppointments = nextAppointments.map(appointment => ({
         appointment_id: appointment.id,
         appointment_date: appointment.appointmentDate,
         appointment_time: new Date(appointment.appointmentDate).toLocaleTimeString('pt-BR', { 
@@ -5535,7 +5535,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         establishment_name: appointment.establishmentName,
         client_name: appointment.clientName,
         client_id: appointment.clientId,
-        client_phone: appointment.clientPhone,
+        client_phone: appointment.clientPhone, // Telefone para envio de mensagem
         client_email: appointment.clientEmail,
         duration: appointment.duration,
         service_price: appointment.servicePrice,
@@ -5547,14 +5547,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: true,
         establishment_id: establishmentId,
         establishment_name: establishment.name,
-        total_appointments: formattedAppointments.length,
+        total_clients: formattedAppointments.length,
         appointments: formattedAppointments,
         timestamp: new Date().toISOString(),
-        message: `Encontrados ${formattedAppointments.length} agendamento(s) próximo(s) de 30 minutos`
+        message: `Encontrados ${formattedAppointments.length} cliente(s) com agendamento próximo de 30 minutos`
       });
       
     } catch (error) {
-      console.error("Erro no webhook de agendamentos próximos:", error);
+      console.error("Erro no webhook de próximos agendamentos:", error);
       res.status(500).json({
         success: false,
         error: "Erro interno do servidor",

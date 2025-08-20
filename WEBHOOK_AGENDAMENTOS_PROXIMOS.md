@@ -1,8 +1,8 @@
-# Webhook de Agendamentos Próximos
+# Webhook de Próximos Agendamentos de Clientes
 
 ## Visão Geral
 
-Este webhook retorna todos os agendamentos que estão próximos de 30 minutos do horário agendado, fornecendo informações completas sobre o cliente, serviço, profissional e estabelecimento.
+Este webhook retorna o **próximo agendamento** de cada cliente que está próximo de 30 minutos do horário agendado, fornecendo informações completas incluindo o telefone do cliente para envio de lembretes automáticos.
 
 ## Endpoint
 
@@ -27,7 +27,7 @@ https://salaoonline-render.onrender.com/webhook/upcoming-appointments/1
   "success": true,
   "establishment_id": 1,
   "establishment_name": "Salão da Maria",
-  "total_appointments": 2,
+  "total_clients": 2,
   "appointments": [
     {
       "appointment_id": 123,
@@ -49,7 +49,7 @@ https://salaoonline-render.onrender.com/webhook/upcoming-appointments/1
     }
   ],
   "timestamp": "2025-01-15T14:00:00.000Z",
-  "message": "Encontrados 2 agendamento(s) próximo(s) de 30 minutos"
+  "message": "Encontrados 2 cliente(s) com agendamento próximo de 30 minutos"
 }
 ```
 
@@ -65,12 +65,13 @@ https://salaoonline-render.onrender.com/webhook/upcoming-appointments/1
 
 ## Critérios de Busca
 
-O webhook retorna agendamentos que atendem aos seguintes critérios:
+O webhook retorna o **próximo agendamento** de cada cliente que atende aos seguintes critérios:
 
 1. **Estabelecimento**: Pertencem ao establishmentId especificado
 2. **Horário**: Estão entre o momento atual e 30 minutos à frente
 3. **Status**: Apenas agendamentos com status "confirmed" ou "scheduled"
-4. **Ordenação**: Ordenados por data/hora do agendamento
+4. **Cliente Único**: Se um cliente tem múltiplos agendamentos próximos, retorna apenas o mais próximo
+5. **Ordenação**: Ordenados por data/hora do agendamento
 
 ## Campos Retornados
 
@@ -86,8 +87,8 @@ O webhook retorna agendamentos que atendem aos seguintes critérios:
 ### Informações do Cliente
 - `client_name`: Nome do cliente
 - `client_id`: ID do cliente
-- `client_phone`: Telefone do cliente
-- `client_email`: Email do cliente
+- `client_phone`: Telefone do cliente (para envio de SMS/WhatsApp)
+- `client_email`: Email do cliente (para envio de email)
 
 ### Informações do Profissional
 - `staff_name`: Nome do profissional
@@ -102,14 +103,17 @@ O webhook retorna agendamentos que atendem aos seguintes critérios:
 
 ## Casos de Uso
 
-### 1. Notificações Automáticas
-Use este webhook para enviar lembretes automáticos aos clientes 30 minutos antes do agendamento.
+### 1. Lembretes Automáticos por SMS/WhatsApp
+Use este webhook para enviar lembretes automáticos aos clientes 30 minutos antes do agendamento, utilizando o telefone retornado.
 
-### 2. Preparação da Equipe
+### 2. Lembretes por Email
+Envie lembretes por email usando o campo `client_email` retornado.
+
+### 3. Preparação da Equipe
 Notifique a equipe sobre clientes que estão chegando em breve.
 
-### 3. Integração com N8N
-Configure workflows no N8N para processar automaticamente os agendamentos próximos.
+### 4. Integração com N8N
+Configure workflows no N8N para processar automaticamente os próximos agendamentos de cada cliente.
 
 ## Exemplo de Integração com N8N
 
@@ -125,14 +129,35 @@ const appointments = $json.appointments;
 
 if (appointments && appointments.length > 0) {
   appointments.forEach(appointment => {
-    // Enviar SMS/WhatsApp para o cliente
-    const message = `Olá ${appointment.client_name}! 
-    Lembrete: seu agendamento para ${appointment.service_name} 
-    está marcado para hoje às ${appointment.appointment_time} 
-    com ${appointment.staff_name}. 
-    Aguardamos você! 😊`;
+    // Verificar se o cliente tem telefone
+    if (appointment.client_phone) {
+      // Enviar SMS/WhatsApp para o cliente
+      const message = `Olá ${appointment.client_name}! 
+      Lembrete: seu agendamento para ${appointment.service_name} 
+      está marcado para hoje às ${appointment.appointment_time} 
+      com ${appointment.staff_name}. 
+      Aguardamos você! 😊`;
+      
+      // Lógica para enviar SMS/WhatsApp usando appointment.client_phone
+    }
     
-    // Lógica para enviar mensagem
+    // Verificar se o cliente tem email
+    if (appointment.client_email) {
+      // Enviar email para o cliente
+      const emailSubject = `Lembrete de Agendamento - ${appointment.service_name}`;
+      const emailBody = `Olá ${appointment.client_name},
+      
+      Lembrete: seu agendamento para ${appointment.service_name} 
+      está marcado para hoje às ${appointment.appointment_time} 
+      com ${appointment.staff_name}.
+      
+      Aguardamos você!
+      
+      Atenciosamente,
+      ${appointment.establishment_name}`;
+      
+      // Lógica para enviar email usando appointment.client_email
+    }
   });
 }
 ```
