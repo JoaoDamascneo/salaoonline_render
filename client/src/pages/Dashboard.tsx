@@ -130,9 +130,9 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                R$ {(((financialStats as any)?.todayIncome || 0) - ((financialStats as any)?.todayExpenses || 0)).toFixed(2)}
+                R$ {((financialStats as any)?.todayIncome || 0).toFixed(2)}
               </div>
-              <p className="text-xs text-muted-foreground">Entrada menos saídas</p>
+              <p className="text-xs text-muted-foreground">Entrada de valores hoje</p>
             </CardContent>
           </Card>
 
