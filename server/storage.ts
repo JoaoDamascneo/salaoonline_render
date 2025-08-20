@@ -507,7 +507,7 @@ export class DatabaseStorage implements IStorage {
     return service;
   }
 
-  async deleteService(id: number): Promise<void> {
+  async deleteService(id: number, establishmentId: number): Promise<void> {
     // First get all appointments for this service
     const serviceAppointments = await db.select({ id: appointments.id }).from(appointments).where(eq(appointments.serviceId, id));
     
@@ -1166,6 +1166,33 @@ export class DatabaseStorage implements IStorage {
       .insert(products)
       .values(insertProduct as any)
       .returning();
+    
+    // NOTIFICAÇÕES WEBSOCKET AUTOMÁTICAS APÓS CRIAÇÃO DE PRODUTO
+    try {
+      const { wsManager } = await import("./websocket");
+      if (wsManager) {
+        // 1. Notificação de mudança no inventário
+        wsManager.notifyInventoryChange(product.establishmentId, {
+          type: 'product_created',
+          productId: product.id,
+          productName: product.name,
+          stock: product.stock,
+          price: product.price
+        });
+        
+        // 2. Notificação de mudança no dashboard
+        wsManager.notifyDashboardStatsChange(product.establishmentId, {
+          type: 'inventory_update',
+          reason: 'product_created',
+          productId: product.id,
+          productName: product.name
+        });
+      }
+    } catch (wsError) {
+      console.error("WebSocket notification error in createProduct:", wsError);
+      // Não falhar a criação por erro de WebSocket
+    }
+    
     return product;
   }
 
@@ -1175,10 +1202,73 @@ export class DatabaseStorage implements IStorage {
       .set(updateData)
       .where(and(eq(products.id, id), eq(products.establishmentId, establishmentId)))
       .returning();
+    
+    // NOTIFICAÇÕES WEBSOCKET AUTOMÁTICAS APÓS ATUALIZAÇÃO DE PRODUTO
+    try {
+      const { wsManager } = await import("./websocket");
+      if (wsManager) {
+        // 1. Notificação de mudança no inventário
+        wsManager.notifyInventoryChange(establishmentId, {
+          type: 'product_updated',
+          productId: id,
+          productName: product.name,
+          newStock: product.stock,
+          changes: updateData
+        });
+        
+        // 2. Se houve mudança de estoque, notificar dashboard
+        if ('stock' in updateData) {
+          wsManager.notifyDashboardStatsChange(establishmentId, {
+            type: 'inventory_update',
+            reason: 'stock_changed',
+            productId: id,
+            productName: product.name,
+            newStock: product.stock
+          });
+        }
+      }
+    } catch (wsError) {
+      console.error("WebSocket notification error in updateProduct:", wsError);
+      // Não falhar a atualização por erro de WebSocket
+    }
+    
     return product;
   }
 
   async deleteProduct(id: number, establishmentId: number): Promise<void> {
+    // Primeiro, buscar o produto para obter os dados necessários para notificação
+    const [product] = await db
+      .select()
+      .from(products)
+      .where(and(eq(products.id, id), eq(products.establishmentId, establishmentId)));
+    
+    if (product) {
+      // NOTIFICAÇÕES WEBSOCKET ANTES DE DELETAR
+      try {
+        const { wsManager } = await import("./websocket");
+        if (wsManager) {
+          // 1. Notificação de mudança no inventário
+          wsManager.notifyInventoryChange(establishmentId, {
+            type: 'product_deleted',
+            productId: id,
+            productName: product.name
+          });
+          
+          // 2. Notificação de mudança no dashboard
+          wsManager.notifyDashboardStatsChange(establishmentId, {
+            type: 'inventory_update',
+            reason: 'product_deleted',
+            productId: id,
+            productName: product.name
+          });
+        }
+      } catch (wsError) {
+        console.error("WebSocket notification error in deleteProduct:", wsError);
+        // Não falhar a exclusão por erro de WebSocket
+      }
+    }
+    
+    // Agora deletar o produto
     await db.delete(products).where(and(eq(products.id, id), eq(products.establishmentId, establishmentId)));
   }
 
@@ -1312,10 +1402,74 @@ export class DatabaseStorage implements IStorage {
       .insert(transactions)
       .values(insertTransaction)
       .returning();
+    
+    // NOTIFICAÇÕES WEBSOCKET AUTOMÁTICAS APÓS CRIAÇÃO DE TRANSAÇÃO
+    try {
+      const { wsManager } = await import("./websocket");
+      if (wsManager) {
+        // 1. Notificação de mudança financeira
+        wsManager.notifyFinancialChange(transaction.establishmentId, {
+          type: 'transaction_created',
+          transactionId: transaction.id,
+          amount: transaction.amount,
+          transactionType: transaction.type,
+          category: transaction.category
+        });
+        
+        // 2. Notificação de mudança no dashboard
+        wsManager.notifyDashboardStatsChange(transaction.establishmentId, {
+          type: 'financial_stats_update',
+          reason: 'new_transaction',
+          transactionId: transaction.id,
+          amount: transaction.amount,
+          transactionType: transaction.type
+        });
+      }
+    } catch (wsError) {
+      console.error("WebSocket notification error in createTransaction:", wsError);
+      // Não falhar a criação da transação por erro de WebSocket
+    }
+    
     return transaction;
   }
 
   async deleteTransaction(id: number): Promise<void> {
+    // Primeiro, buscar a transação para obter os dados necessários para notificação
+    const [transaction] = await db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.id, id));
+    
+    if (transaction) {
+      // NOTIFICAÇÕES WEBSOCKET ANTES DE DELETAR
+      try {
+        const { wsManager } = await import("./websocket");
+        if (wsManager) {
+          // 1. Notificação de mudança financeira
+          wsManager.notifyFinancialChange(transaction.establishmentId, {
+            type: 'transaction_deleted',
+            transactionId: id,
+            amount: transaction.amount,
+            transactionType: transaction.type,
+            category: transaction.category
+          });
+          
+          // 2. Notificação de mudança no dashboard
+          wsManager.notifyDashboardStatsChange(transaction.establishmentId, {
+            type: 'financial_stats_update',
+            reason: 'transaction_deleted',
+            transactionId: id,
+            amount: transaction.amount,
+            transactionType: transaction.type
+          });
+        }
+      } catch (wsError) {
+        console.error("WebSocket notification error in deleteTransaction:", wsError);
+        // Não falhar a exclusão por erro de WebSocket
+      }
+    }
+    
+    // Agora deletar a transação
     await db.delete(transactions).where(eq(transactions.id, id));
   }
 
@@ -1396,10 +1550,11 @@ export class DatabaseStorage implements IStorage {
 
       // Get additional stats in parallel
       const [todaysAppointments, totalClients, activeServices, lowStockProducts] = await Promise.all([
-        // Today's appointments count
+        // Today's appointments count - CORRIGIDO: conta agendamentos PARA hoje, não criados hoje
         db.execute(sql`SELECT COUNT(*) as count FROM appointments 
           WHERE establishment_id = ${establishmentId} 
-          AND DATE(appointment_date) = CURRENT_DATE`),
+          AND DATE(appointment_date) = CURRENT_DATE
+          AND (status = 'confirmed' OR status = 'scheduled' OR status = 'completed')`),
         // Total clients
         db.execute(sql`SELECT COUNT(*) as count FROM clients 
           WHERE establishment_id = ${establishmentId}`),

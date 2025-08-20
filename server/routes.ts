@@ -1821,7 +1821,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/services/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      await storage.deleteService(id);
+              await storage.deleteService(id, establishmentId);
       res.json({ message: "Service deleted successfully" });
     } catch (error) {
       console.error("Delete service error:", error);
@@ -3007,37 +3007,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         transactionDate: brazilTime,
       });
       
-      // Send WebSocket notifications for both inventory and financial changes
-      try {
-        const { wsManager } = await import("./websocket");
-        if (wsManager) {
-          // Inventory change notification
-          wsManager.notifyInventoryChange(establishmentId, {
-            type: 'product_sold',
-            productId: productId,
-            productName: productName,
-            quantity: quantity,
-            newStock: newStock
-          });
-          
-          // Financial change notification
-          wsManager.notifyFinancialChange(establishmentId, {
-            type: 'product_sale',
-            productId: productId,
-            productName: productName,
-            quantity: quantity,
-            amount: totalAmount
-          });
-          
-          // Dashboard change notification
-          wsManager.notifyDashboardStatsChange(establishmentId, {
-            type: 'product_sale_update',
-            reason: 'product_sold'
-          });
-        }
-      } catch (wsError) {
-                  // WebSocket notification error logging removed for compute optimization
-      }
+      // WebSocket notifications are now handled automatically in storage.ts
       
       res.json({ 
         success: true, 
@@ -3165,27 +3135,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const transactionData = insertTransactionSchema.parse(transformedData);
       const transaction = await storage.createTransaction(transactionData);
       
-      // Send WebSocket notification for financial change
-      try {
-        const { wsManager } = await import("./websocket");
-        if (wsManager) {
-          wsManager.notifyFinancialChange(establishmentId, {
-            type: 'transaction_created',
-            transactionId: transaction.id,
-            amount: transaction.amount,
-            transactionType: transaction.type,
-            category: transaction.category
-          });
-          
-          // Also notify dashboard change for stats updates
-          wsManager.notifyDashboardStatsChange(establishmentId, {
-            type: 'financial_stats_update',
-            reason: 'new_transaction'
-          });
-        }
-      } catch (wsError) {
-                  // WebSocket notification error logging removed for compute optimization
-      }
+      // WebSocket notifications are now handled automatically in storage.ts
       
       res.json(transaction);
     } catch (error) {
@@ -3200,24 +3150,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       await storage.deleteTransaction(id);
       
-      // Send WebSocket notification for financial change
-      try {
-        const { wsManager } = await import("./websocket");
-        if (wsManager) {
-          wsManager.notifyFinancialChange(establishmentId, {
-            type: 'transaction_deleted',
-            transactionId: id
-          });
-          
-          // Also notify dashboard change for stats updates
-          wsManager.notifyDashboardStatsChange(establishmentId, {
-            type: 'financial_stats_update',
-            reason: 'transaction_deleted'
-          });
-        }
-      } catch (wsError) {
-                  // WebSocket notification error logging removed for compute optimization
-      }
+      // WebSocket notifications are now handled automatically in storage.ts
       
       res.json({ success: true });
     } catch (error) {
