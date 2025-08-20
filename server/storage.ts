@@ -611,7 +611,11 @@ export class DatabaseStorage implements IStorage {
         eq(appointments.clientId, clientId),
         eq(clients.establishmentId, establishmentId),
         eq(staff.establishmentId, establishmentId),
-        eq(services.establishmentId, establishmentId)
+        eq(services.establishmentId, establishmentId),
+        or(
+          eq(appointments.status, 'confirmed'),
+          eq(appointments.status, 'scheduled')
+        )
       ))
       .orderBy(desc(appointments.appointmentDate));
   }
