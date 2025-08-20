@@ -124,6 +124,7 @@ export interface IStorage {
   getAppointments(establishmentId: number): Promise<any[]>;
   getAppointment(id: number, establishmentId: number): Promise<Appointment | undefined>;
   getAppointmentById(id: number): Promise<Appointment | undefined>; // For N8N endpoints
+  getUpcomingAppointments(establishmentId: number): Promise<any[]>; // Agendamentos próximos de 30 minutos
   createAppointment(appointment: InsertAppointment): Promise<Appointment>;
   updateAppointment(id: number, appointment: Partial<InsertAppointment>): Promise<Appointment>;
   deleteAppointment(id: number): Promise<void>;
@@ -668,6 +669,47 @@ export class DatabaseStorage implements IStorage {
   async getAppointmentById(id: number): Promise<Appointment | undefined> {
     const [appointment] = await db.select().from(appointments).where(eq(appointments.id, id));
     return appointment;
+  }
+
+  // Buscar agendamentos que estão próximos de 30 minutos do horário agendado
+  async getUpcomingAppointments(establishmentId: number): Promise<any[]> {
+    const now = new Date();
+    const thirtyMinutesFromNow = new Date(now.getTime() + 30 * 60 * 1000); // 30 minutos à frente
+    
+    return await db
+      .select({
+        id: appointments.id,
+        appointmentDate: appointments.appointmentDate,
+        duration: appointments.duration,
+        status: appointments.status,
+        notes: appointments.notes,
+        clientId: appointments.clientId,
+        staffId: appointments.staffId,
+        serviceId: appointments.serviceId,
+        clientName: clients.name,
+        clientPhone: clients.phone,
+        clientEmail: clients.email,
+        staffName: staff.name,
+        serviceName: services.name,
+        servicePrice: services.price,
+        establishmentId: appointments.establishmentId,
+        establishmentName: establishments.name,
+      })
+      .from(appointments)
+      .leftJoin(clients, eq(appointments.clientId, clients.id))
+      .leftJoin(staff, eq(appointments.staffId, staff.id))
+      .leftJoin(services, eq(appointments.serviceId, services.id))
+      .leftJoin(establishments, eq(appointments.establishmentId, establishments.id))
+      .where(and(
+        eq(appointments.establishmentId, establishmentId),
+        gte(appointments.appointmentDate, now),
+        lte(appointments.appointmentDate, thirtyMinutesFromNow),
+        or(
+          eq(appointments.status, 'confirmed'),
+          eq(appointments.status, 'scheduled')
+        )
+      ))
+      .orderBy(appointments.appointmentDate);
   }
 
   async createAppointment(insertAppointment: InsertAppointment): Promise<Appointment> {

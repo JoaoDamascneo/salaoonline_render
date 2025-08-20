@@ -5493,6 +5493,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Webhook para agendamentos próximos (30 minutos antes do serviço)
+  app.get("/webhook/upcoming-appointments/:establishmentId", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      const establishmentId = parseInt(req.params.establishmentId);
+      
+      if (isNaN(establishmentId)) {
+        return res.status(400).json({
+          success: false,
+          error: "Establishment ID deve ser um número válido"
+        });
+      }
+
+      // Verificar se o estabelecimento existe
+      const establishment = await storage.getEstablishment(establishmentId);
+      if (!establishment) {
+        return res.status(404).json({
+          success: false,
+          error: "Estabelecimento não encontrado"
+        });
+      }
+      
+      // Buscar agendamentos próximos de 30 minutos
+      const upcomingAppointments = await storage.getUpcomingAppointments(establishmentId);
+      
+      // Formatar os dados para o webhook
+      const formattedAppointments = upcomingAppointments.map(appointment => ({
+        appointment_id: appointment.id,
+        appointment_date: appointment.appointmentDate,
+        appointment_time: new Date(appointment.appointmentDate).toLocaleTimeString('pt-BR', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        appointment_date_formatted: new Date(appointment.appointmentDate).toLocaleDateString('pt-BR'),
+        staff_name: appointment.staffName,
+        service_name: appointment.serviceName,
+        establishment_id: appointment.establishmentId,
+        establishment_name: appointment.establishmentName,
+        client_name: appointment.clientName,
+        client_id: appointment.clientId,
+        client_phone: appointment.clientPhone,
+        client_email: appointment.clientEmail,
+        duration: appointment.duration,
+        service_price: appointment.servicePrice,
+        status: appointment.status,
+        notes: appointment.notes
+      }));
+      
+      res.json({
+        success: true,
+        establishment_id: establishmentId,
+        establishment_name: establishment.name,
+        total_appointments: formattedAppointments.length,
+        appointments: formattedAppointments,
+        timestamp: new Date().toISOString(),
+        message: `Encontrados ${formattedAppointments.length} agendamento(s) próximo(s) de 30 minutos`
+      });
+      
+    } catch (error) {
+      console.error("Erro no webhook de agendamentos próximos:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Initialize WebSocket server
