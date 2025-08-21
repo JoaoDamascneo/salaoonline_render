@@ -297,14 +297,18 @@ export class DatabaseStorage implements IStorage {
     const appointmentDate = new Date(appointment.appointmentDate);
     const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000); // 30 minutos antes
     
+    // Usar timezone do Brasil para comparação
+    const now = new Date();
+    const brazilTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+    
     // Se o lembrete já deveria ter sido enviado, não agendar
-    if (lembreteTime <= new Date()) {
+    if (lembreteTime <= brazilTime) {
       console.log(`Lembrete para agendamento ${appointment.id} já deveria ter sido enviado`);
       return;
     }
     
-    // Calcular delay em milissegundos
-    const delay = lembreteTime.getTime() - new Date().getTime();
+    // Calcular delay em milissegundos usando timezone do Brasil
+    const delay = lembreteTime.getTime() - brazilTime.getTime();
     
     // Agendar o envio do lembrete
     setTimeout(async () => {
@@ -800,8 +804,10 @@ export class DatabaseStorage implements IStorage {
 
   // Buscar o próximo agendamento de cada cliente que está próximo de 30 minutos
   async getNextUpcomingAppointments(establishmentId: number): Promise<any[]> {
+    // Usar timezone do Brasil (UTC-3)
     const now = new Date();
-    const thirtyMinutesFromNow = new Date(now.getTime() + 30 * 60 * 1000); // 30 minutos à frente
+    const brazilTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+    const thirtyMinutesFromNow = new Date(brazilTime.getTime() + 30 * 60 * 1000); // 30 minutos à frente
     
     // Subconsulta para pegar o próximo agendamento de cada cliente
     const subquery = db
@@ -812,7 +818,7 @@ export class DatabaseStorage implements IStorage {
       .from(appointments)
       .where(and(
         eq(appointments.establishmentId, establishmentId),
-        gte(appointments.appointmentDate, now),
+        gte(appointments.appointmentDate, brazilTime),
         lte(appointments.appointmentDate, thirtyMinutesFromNow),
         or(
           eq(appointments.status, 'confirmed'),

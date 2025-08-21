@@ -5721,6 +5721,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint de debug para verificar agendamentos e timezone
+  app.get("/webhook/debug-agendamentos/:establishmentId", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      const establishmentId = parseInt(req.params.establishmentId);
+      const now = new Date();
+      const thirtyMinutesFromNow = new Date(now.getTime() + 30 * 60 * 1000);
+      
+      // Buscar todos os agendamentos do estabelecimento
+      const allAppointments = await storage.getAppointments(establishmentId);
+      
+      // Filtrar apenas os confirmados/agendados
+      const confirmedAppointments = allAppointments.filter(apt => 
+        apt.status === 'confirmed' || apt.status === 'scheduled'
+      );
+      
+      // Filtrar os próximos de 30 minutos
+      const upcomingAppointments = confirmedAppointments.filter(apt => {
+        const aptDate = new Date(apt.appointmentDate);
+        return aptDate >= now && aptDate <= thirtyMinutesFromNow;
+      });
+      
+      res.json({
+        success: true,
+        debug_info: {
+          current_time_utc: now.toISOString(),
+          current_time_brasil: now.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
+          thirty_minutes_from_now_utc: thirtyMinutesFromNow.toISOString(),
+          thirty_minutes_from_now_brasil: thirtyMinutesFromNow.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+        },
+        total_appointments: allAppointments.length,
+        confirmed_appointments: confirmedAppointments.length,
+        upcoming_appointments: upcomingAppointments.length,
+        upcoming_appointments_details: upcomingAppointments.map(apt => ({
+          id: apt.id,
+          appointmentDate: apt.appointmentDate,
+          appointmentDate_brasil: new Date(apt.appointmentDate).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
+          status: apt.status,
+          clientName: apt.clientName,
+          serviceName: apt.serviceName
+        })),
+        all_confirmed_appointments: confirmedAppointments.map(apt => ({
+          id: apt.id,
+          appointmentDate: apt.appointmentDate,
+          appointmentDate_brasil: new Date(apt.appointmentDate).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
+          status: apt.status,
+          clientName: apt.clientName,
+          serviceName: apt.serviceName
+        }))
+      });
+      
+    } catch (error) {
+      console.error("Erro no debug de agendamentos:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Initialize WebSocket server
