@@ -4,12 +4,13 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
 import { appointments, clientLoyaltyPoints, clients, loyaltyPrograms, pushSubscriptions, plans, establishments, pendingRegistrations, passwordResetTokens, users, staffVacations } from "@shared/schema";
-import { eq, and, gte, lte, sql } from "drizzle-orm";
+import { eq, and, gte, lte, sql, desc } from "drizzle-orm";
 import { insertEstablishmentSchema, insertUserSchema, insertClientSchema, insertStaffSchema, insertServiceSchema, insertServiceCategorySchema, insertAppointmentSchema, insertProductSchema, insertTransactionSchema, insertBusinessSettingsSchema, staffWorkingHours, insertPushSubscriptionSchema, insertStaffVacationSchema } from "@shared/schema";
 import bcrypt from "bcrypt";
 import Stripe from "stripe";
 import { sendNewAppointmentEmail, sendAppointmentNotification, sendPasswordResetEmail } from "./emailService";
 import { nanoid } from "nanoid";
+import { n8nWebhookData } from "@shared/schema";
 
 // Extend express session type
 declare module 'express-session' {
@@ -5899,6 +5900,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
     } catch (error) {
       console.error("Erro no teste de lembrete:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
+  // Endpoint para debug dos dados da tabela n8n_webhook_data
+  app.get("/webhook/debug-n8n-data/:establishmentId", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      const establishmentId = parseInt(req.params.establishmentId);
+      
+      // Buscar dados da tabela n8n_webhook_data
+      const webhookData = await storage.getN8nWebhookData(establishmentId);
+      
+      // Buscar todos os registros (sem filtro de isActive) para debug
+      const allWebhookData = await db
+        .select()
+        .from(n8nWebhookData)
+        .where(eq(n8nWebhookData.establishmentId, establishmentId))
+        .orderBy(desc(n8nWebhookData.createdAt));
+      
+      res.json({
+        success: true,
+        establishment_id: establishmentId,
+        webhook_data_active: webhookData,
+        all_webhook_data: allWebhookData,
+        total_records: allWebhookData.length
+      });
+      
+    } catch (error) {
+      console.error("Erro no debug de n8n data:", error);
       res.status(500).json({
         success: false,
         error: "Erro interno do servidor",
