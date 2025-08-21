@@ -213,13 +213,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Links de pagamento do Stripe por plano com email bloqueado (somente leitura)
-      const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+      const baseUrl = process.env.BASE_URL || 'https://salaoonline-render.onrender.com';
       const encodedEmail = encodeURIComponent(email);
       
       const stripeLinks = {
         1: `https://buy.stripe.com/00w8wQ6Y83eq2un3EBfIs00?locked_prefilled_email=${encodedEmail}&success_url=${baseUrl}/pagamento-callback?success=true&session_id={CHECKOUT_SESSION_ID}&cancel_url=${baseUrl}/pagamento-callback?canceled=true`, // Base (produção)
-        2: `https://buy.stripe.com/8x2cN60zK9CO2unejffIs01?locked_prefilled_email=${encodedEmail}`, // Core
-        3: `https://buy.stripe.com/5kQcN6fuEeX85Gz4IFfIs02?locked_prefilled_email=${encodedEmail}`  // Expert
+        2: `https://buy.stripe.com/8x2cN60zK9CO2unejffIs01?locked_prefilled_email=${encodedEmail}&success_url=${baseUrl}/pagamento-callback?success=true&session_id={CHECKOUT_SESSION_ID}&cancel_url=${baseUrl}/pagamento-callback?canceled=true`, // Core
+        3: `https://buy.stripe.com/5kQcN6fuEeX85Gz4IFfIs02?locked_prefilled_email=${encodedEmail}&success_url=${baseUrl}/pagamento-callback?success=true&session_id={CHECKOUT_SESSION_ID}&cancel_url=${baseUrl}/pagamento-callback?canceled=true`  // Expert
       };
 
       const paymentLink = stripeLinks[planId as keyof typeof stripeLinks];
