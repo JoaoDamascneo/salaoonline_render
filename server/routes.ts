@@ -5840,6 +5840,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint para testar envio de lembrete
+  app.post("/webhook/test-lembrete", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      // Dados de teste
+      const testData = {
+        cliente_nome: "João Pedro Teste",
+        cliente_id: 1,
+        cliente_telefone: "11999999999",
+        cliente_email: "teste@email.com",
+        estabelecimento_nome: "Salão Teste",
+        estabelecimento_id: 2,
+        servico_nome: "Corte Degradê",
+        servico_preco: "50.00",
+        servico_duracao: 60,
+        profissional_nome: "Profissional Teste",
+        agendamento_id: 999,
+        agendamento_data: "21/08/2025",
+        agendamento_hora: "22:30",
+        agendamento_data_completa: "2025-08-21T22:30:00.000Z",
+        agendamento_status: "confirmed",
+        agendamento_observacoes: "Teste de lembrete"
+      };
+
+      const n8nWebhookUrl = 'https://n8n-n8n-start.ayp7v6.easypanel.host/webhook/lembrete';
+      
+      const requestBody = {
+        success: true,
+        total_lembretes: 1,
+        lembretes: [testData],
+        timestamp: new Date().toISOString(),
+        message: "Teste de lembrete automático"
+      };
+      
+      console.log("Enviando teste de lembrete:", JSON.stringify(requestBody, null, 2));
+      
+      const response = await fetch(n8nWebhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+      
+      const responseText = await response.text();
+      
+      res.json({
+        success: response.ok,
+        status: response.status,
+        response_text: responseText,
+        sent_data: requestBody,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+      
+    } catch (error) {
+      console.error("Erro no teste de lembrete:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Initialize WebSocket server
