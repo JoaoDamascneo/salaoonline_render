@@ -446,7 +446,7 @@ export function AppointmentScheduler({ isOpen, onOpenChange, initialData }: Appo
                         <Input 
                           type="date" 
                           {...field} 
-                          min={new Date().toISOString().split('T')[0]}
+                          min={new Date().toLocaleDateString('en-CA')}
                         />
                       </FormControl>
                       <FormMessage />
