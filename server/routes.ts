@@ -5784,6 +5784,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint para debug de agendamentos e timezone
+  app.get("/webhook/debug-appointments/:establishmentId", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      const establishmentId = parseInt(req.params.establishmentId);
+      
+      // Horário atual em diferentes timezones
+      const now = new Date();
+      const brazilTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+      const thirtyMinutesFromNow = new Date(brazilTime.getTime() + 30 * 60 * 1000);
+      
+      // Buscar todos os agendamentos do estabelecimento
+      const allAppointments = await storage.getAppointments(establishmentId);
+      
+      // Filtrar agendamentos próximos
+      const upcomingAppointments = allAppointments.filter(apt => {
+        const aptDate = new Date(apt.appointmentDate);
+        return aptDate >= brazilTime && 
+               aptDate <= thirtyMinutesFromNow && 
+               (apt.status === 'confirmed' || apt.status === 'scheduled');
+      });
+      
+      res.json({
+        success: true,
+        debug_info: {
+          current_time_utc: now.toISOString(),
+          current_time_brazil: brazilTime.toISOString(),
+          thirty_minutes_from_now: thirtyMinutesFromNow.toISOString(),
+          total_appointments: allAppointments.length,
+          upcoming_appointments_count: upcomingAppointments.length
+        },
+        all_appointments: allAppointments.map(apt => ({
+          id: apt.id,
+          appointmentDate: apt.appointmentDate,
+          status: apt.status,
+          clientName: apt.clientName,
+          serviceName: apt.serviceName,
+          is_upcoming: new Date(apt.appointmentDate) >= brazilTime && 
+                      new Date(apt.appointmentDate) <= thirtyMinutesFromNow &&
+                      (apt.status === 'confirmed' || apt.status === 'scheduled')
+        })),
+        upcoming_appointments: upcomingAppointments
+      });
+      
+    } catch (error) {
+      console.error("Erro no debug de agendamentos:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Initialize WebSocket server
