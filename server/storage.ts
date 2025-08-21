@@ -325,6 +325,7 @@ export class DatabaseStorage implements IStorage {
   // Enviar lembrete para o N8N
   private async enviarLembreteN8N(appointment: Appointment, client: Client | undefined, service: Service | undefined, staffMember: Staff | undefined) {
     const establishment = await this.getEstablishment(appointment.establishmentId);
+    const webhookData = await this.getN8nWebhookData(appointment.establishmentId);
     
     const lembreteData = {
       cliente_nome: client?.name || 'Cliente',
@@ -333,6 +334,7 @@ export class DatabaseStorage implements IStorage {
       cliente_email: client?.email || '',
       estabelecimento_nome: establishment?.name || 'Estabelecimento',
       estabelecimento_id: appointment.establishmentId,
+      instance_id: webhookData?.instanceId || '',
       servico_nome: service?.name || 'Serviço',
       servico_preco: service?.price || '0.00',
       servico_duracao: appointment.duration,
