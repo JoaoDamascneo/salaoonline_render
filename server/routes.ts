@@ -5907,6 +5907,177 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint de teste para criar agendamento 23:10
+  app.post("/webhook/teste-agendamento-23h10", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      // Buscar o cliente João Pedro (ID 1)
+      const client = await storage.getClient(1, 2);
+      if (!client) {
+        return res.status(404).json({ success: false, error: "Cliente não encontrado" });
+      }
+      
+      // Buscar o serviço Barba (assumindo que existe)
+      const services = await storage.getServices(2);
+      const service = services.find(s => s.name.toLowerCase().includes('barba'));
+      if (!service) {
+        return res.status(404).json({ success: false, error: "Serviço Barba não encontrado" });
+      }
+      
+      // Buscar o profissional Expert 01
+      const staff = await storage.getStaff(2);
+      const expert01 = staff.find(s => s.name === 'Expert 01');
+      if (!expert01) {
+        return res.status(404).json({ success: false, error: "Profissional Expert 01 não encontrado" });
+      }
+      
+      // Data de hoje às 23:10
+      const today = new Date();
+      const appointmentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 10, 0);
+      
+      const appointmentData = {
+        clientId: client.id,
+        serviceId: service.id,
+        staffId: expert01.id,
+        establishmentId: 2,
+        appointmentDate: appointmentDate.toISOString(),
+        duration: service.duration,
+        status: 'confirmed',
+        notes: 'Teste de agendamento 23:10'
+      };
+      
+      console.log("🧪 Criando agendamento de teste:", appointmentData);
+      
+      // Criar o agendamento
+      const newAppointment = await storage.createAppointment(appointmentData);
+      
+      res.json({
+        success: true,
+        message: "Agendamento criado com sucesso",
+        appointment: {
+          id: newAppointment.id,
+          client_name: client.name,
+          service_name: service.name,
+          staff_name: expert01.name,
+          appointment_date: appointmentDate.toISOString(),
+          status: newAppointment.status
+        }
+      });
+      
+    } catch (error) {
+      console.error("❌ Erro ao criar agendamento de teste:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
+  // Endpoint de debug para verificar horários disponíveis
+  app.get("/webhook/debug-horarios/:staffId/:serviceId", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      const staffId = parseInt(req.params.staffId);
+      const serviceId = parseInt(req.params.serviceId);
+      const date = req.query.date as string || new Date().toISOString().split('T')[0];
+      const establishmentId = 2; // Estabelecimento fixo para teste
+      
+      // Buscar dados necessários
+      const service = await storage.getService(serviceId, establishmentId);
+      const businessHours = await storage.getBusinessHours(establishmentId);
+      const staffWorkingHours = await storage.getStaffWorkingHours(staffId, establishmentId);
+      const existingAppointments = await storage.getAppointments(establishmentId);
+      
+      const queryDate = new Date(date);
+      const dayOfWeek = queryDate.getDay();
+      
+      // Horários do estabelecimento
+      const dayHours = businessHours.find(h => h.dayOfWeek === dayOfWeek);
+      const staffDayHours = staffWorkingHours.find(h => h.dayOfWeek === dayOfWeek);
+      
+      // Horários finais (mais restritivo)
+      const openTime = staffDayHours?.openTime || dayHours?.openTime || "09:00";
+      const closeTime = staffDayHours?.closeTime || dayHours?.closeTime || "18:00";
+      const [openHour, openMinute] = openTime.split(':').map(Number);
+      const [closeHour, closeMinute] = closeTime.split(':').map(Number);
+      
+      // Horário atual em diferentes timezones
+      const currentTime = new Date();
+      const currentBrazilTime = new Date(currentTime.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+      const currentUTC = new Date();
+      
+      // Filtrar agendamentos do dia
+      const staffAppointments = existingAppointments.filter(apt => {
+        if (apt.staffId !== staffId) return false;
+        const aptDate = new Date(apt.appointmentDate);
+        return aptDate.getFullYear() === queryDate.getFullYear() &&
+               aptDate.getMonth() === queryDate.getMonth() &&
+               aptDate.getDate() === queryDate.getDate();
+      });
+      
+      // Testar alguns horários específicos
+      const testTimes = ["22:00", "22:30", "23:00", "23:10", "23:30"];
+      const timeTests = testTimes.map(timeString => {
+        const slotStartBrazil = new Date(`${date}T${timeString}:00`);
+        const slotStart = new Date(slotStartBrazil.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+        const slotEnd = new Date(slotStart.getTime() + (service.duration * 60000));
+        
+        const isPastTime = slotStart <= currentBrazilTime;
+        const hasConflict = staffAppointments.some((apt: any) => {
+          const aptStart = new Date(apt.appointmentDate);
+          const aptDuration = apt.duration || 30;
+          const aptEnd = new Date(aptStart.getTime() + (aptDuration * 60000));
+          return (slotStart < aptEnd && slotEnd > aptStart);
+        });
+        
+        return {
+          time: timeString,
+          slotStartBrazil: slotStartBrazil.toISOString(),
+          slotStart: slotStart.toISOString(),
+          currentBrazilTime: currentBrazilTime.toISOString(),
+          isPastTime,
+          hasConflict,
+          available: !isPastTime && !hasConflict
+        };
+      });
+      
+      res.json({
+        success: true,
+        debug_info: {
+          date,
+          dayOfWeek,
+          establishmentId,
+          staffId,
+          serviceId,
+          service_duration: service.duration,
+          current_time_utc: currentUTC.toISOString(),
+          current_time_brazil: currentBrazilTime.toISOString()
+        },
+        business_hours: {
+          establishment: dayHours,
+          staff: staffDayHours,
+          final_open: openTime,
+          final_close: closeTime
+        },
+        appointments_today: staffAppointments.length,
+        time_tests: timeTests
+      });
+      
+    } catch (error) {
+      console.error("Erro no debug de horários:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Initialize WebSocket server
