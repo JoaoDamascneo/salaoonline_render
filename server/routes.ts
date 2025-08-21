@@ -5841,9 +5841,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint de teste temporário para agendamento 22:30
+  app.post("/webhook/teste-22h30", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      // Simular dados do agendamento das 22:30
+      const testData = {
+        cliente_nome: "João Pedro Damasceno",
+        cliente_id: 1,
+        cliente_telefone: "5511988747359",
+        cliente_email: null,
+        estabelecimento_nome: "Studio Expert Premium",
+        estabelecimento_id: 2,
+        instance_id: "1476f853-4f4d-4702-bf08-b262da636d24",
+        servico_nome: "Barba",
+        servico_preco: "35.00",
+        servico_duracao: 20,
+        profissional_nome: "Expert 01",
+        agendamento_id: 128,
+        agendamento_data: "20/08/2025",
+        agendamento_hora: "22:30",
+        agendamento_data_completa: "2025-08-20T22:30:00.000Z",
+        agendamento_status: "confirmed",
+        agendamento_observacoes: ""
+      };
 
-
-
+      const n8nWebhookUrl = 'https://n8n-n8n-start.ayp7v6.easypanel.host/webhook/lembrete';
+      
+      const requestBody = {
+        success: true,
+        total_lembretes: 1,
+        lembretes: [testData],
+        timestamp: new Date().toISOString(),
+        message: "Teste do agendamento 22:30"
+      };
+      
+      console.log("🧪 Enviando teste do agendamento 22:30:", JSON.stringify(requestBody, null, 2));
+      
+      const response = await fetch(n8nWebhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
+      
+      const responseText = await response.text();
+      
+      res.json({
+        success: response.ok,
+        status: response.status,
+        response_text: responseText,
+        sent_data: requestBody,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+      
+    } catch (error) {
+      console.error("❌ Erro no teste do agendamento 22:30:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
 
   const httpServer = createServer(app);
   
