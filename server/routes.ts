@@ -5854,6 +5854,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         cliente_email: "teste@email.com",
         estabelecimento_nome: "Salão Teste",
         estabelecimento_id: 2,
+        instancia_nome: "teste-instancia-123",
         servico_nome: "Corte Degradê",
         servico_preco: "50.00",
         servico_duracao: 60,

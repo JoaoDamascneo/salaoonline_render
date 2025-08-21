@@ -326,6 +326,9 @@ export class DatabaseStorage implements IStorage {
   private async enviarLembreteN8N(appointment: Appointment, client: Client | undefined, service: Service | undefined, staffMember: Staff | undefined) {
     const establishment = await this.getEstablishment(appointment.establishmentId);
     
+    // Buscar dados da instância relacionada ao estabelecimento
+    const webhookData = await this.getN8nWebhookData(appointment.establishmentId);
+    
     const lembreteData = {
       cliente_nome: client?.name || 'Cliente',
       cliente_id: appointment.clientId,
@@ -333,6 +336,7 @@ export class DatabaseStorage implements IStorage {
       cliente_email: client?.email || '',
       estabelecimento_nome: establishment?.name || 'Estabelecimento',
       estabelecimento_id: appointment.establishmentId,
+      instancia_nome: webhookData?.instanceId || 'Instância não configurada',
       servico_nome: service?.name || 'Serviço',
       servico_preco: service?.price || '0.00',
       servico_duracao: appointment.duration,
@@ -366,7 +370,7 @@ export class DatabaseStorage implements IStorage {
       });
       
       if (response.ok) {
-        console.log(`✅ Lembrete enviado com sucesso para o N8N - Cliente: ${client?.name}, Agendamento: ${appointment.id}`);
+        console.log(`✅ Lembrete enviado com sucesso para o N8N - Cliente: ${client?.name}, Agendamento: ${appointment.id}, Instância: ${webhookData?.instanceId || 'N/A'}`);
       } else {
         console.error(`❌ Erro ao enviar lembrete para o N8N. Status: ${response.status}`);
       }
