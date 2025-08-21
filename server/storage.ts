@@ -370,7 +370,7 @@ export class DatabaseStorage implements IStorage {
       });
       
       if (response.ok) {
-        console.log(`✅ Lembrete enviado com sucesso para o N8N - Cliente: ${client?.name}, Agendamento: ${appointment.id}, Instância: ${webhookData?.establishmentName || 'N/A'}`);
+        console.log(`✅ Lembrete enviado com sucesso para o N8N - Cliente: ${client?.name}, Agendamento: ${appointment.id}, Estabelecimento: ${establishment?.name}, Instância: ${webhookData?.establishmentName || 'N/A'}`);
       } else {
         console.error(`❌ Erro ao enviar lembrete para o N8N. Status: ${response.status}`);
       }

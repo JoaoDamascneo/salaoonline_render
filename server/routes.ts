@@ -5852,9 +5852,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         cliente_id: 1,
         cliente_telefone: "11999999999",
         cliente_email: "teste@email.com",
-        estabelecimento_nome: "Salão Teste",
+        estabelecimento_nome: "Studio Expert Premium", // Nome do estabelecimento
         estabelecimento_id: 2,
-        instancia_nome: "teste-instancia-123",
+        instancia_nome: "minha-instancia-whatsapp", // Nome da instância (da tabela n8n_webhook_data)
         servico_nome: "Corte Degradê",
         servico_preco: "50.00",
         servico_duracao: 60,
