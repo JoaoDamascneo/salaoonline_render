@@ -2699,8 +2699,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       while (currentSlotHour < closeHour || (currentSlotHour === closeHour && currentSlotMinute < closeMinute)) {
         const timeString = `${currentSlotHour.toString().padStart(2, '0')}:${currentSlotMinute.toString().padStart(2, '0')}`;
         
-        // Create start and end times for this potential slot
-        const slotStart = new Date(`${date}T${timeString}:00`);
+        // Create start and end times for this potential slot (in Brazil timezone)
+        const slotStartBrazil = new Date(`${date}T${timeString}:00`);
+        const slotStart = new Date(slotStartBrazil.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
         const slotEnd = new Date(slotStart.getTime() + (serviceDurationMinutes * 60000));
         
         // Check if service would finish before closing time
@@ -2708,7 +2709,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const slotEndMinute = slotEnd.getMinutes();
         
         if (slotEndHour < closeHour || (slotEndHour === closeHour && slotEndMinute <= closeMinute)) {
-          // Check if slot is not in the past
+          // Check if slot is not in the past (both times in Brazil timezone)
           const isPastTime = slotStart <= currentBrazilTime;
           
           // Check for conflicts with existing appointments
