@@ -2700,8 +2700,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const timeString = `${currentSlotHour.toString().padStart(2, '0')}:${currentSlotMinute.toString().padStart(2, '0')}`;
         
         // Create start and end times for this potential slot (in Brazil timezone)
-        const slotStartBrazil = new Date(`${date}T${timeString}:00`);
-        const slotStart = new Date(slotStartBrazil.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+        const slotStart = new Date(`${date}T${timeString}:00`);
         const slotEnd = new Date(slotStart.getTime() + (serviceDurationMinutes * 60000));
         
         // Check if service would finish before closing time
