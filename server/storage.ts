@@ -295,11 +295,27 @@ export class DatabaseStorage implements IStorage {
   // Agendar lembrete automático para 30 minutos antes do agendamento
   private async scheduleLembrete(appointment: Appointment, client: Client | undefined, service: Service | undefined, staffMember: Staff | undefined) {
     const appointmentDate = new Date(appointment.appointmentDate);
-    const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000); // 30 minutos antes
-    
     const now = new Date();
     
-    // Se o lembrete já deveria ter sido enviado, enviar imediatamente
+    // Verificar se o dia e mês do agendamento são iguais ao dia atual
+    const appointmentDay = appointmentDate.getDate();
+    const appointmentMonth = appointmentDate.getMonth();
+    const appointmentYear = appointmentDate.getFullYear();
+    
+    const currentDay = now.getDate();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    // Se o dia, mês e ano não são iguais ao atual, não agendar lembrete
+    if (appointmentDay !== currentDay || appointmentMonth !== currentMonth || appointmentYear !== currentYear) {
+      console.log(`Lembrete para agendamento ${appointment.id} não será agendado - data diferente do dia atual`);
+      return;
+    }
+    
+    // Calcular horário do lembrete (30 minutos antes)
+    const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000);
+    
+    // Se o horário do lembrete já passou, enviar imediatamente
     if (lembreteTime <= now) {
       console.log(`Lembrete para agendamento ${appointment.id} já deveria ter sido enviado - enviando agora`);
       try {
@@ -322,7 +338,7 @@ export class DatabaseStorage implements IStorage {
       }
     }, delay);
     
-    console.log(`Lembrete agendado para agendamento ${appointment.id} em ${new Date(lembreteTime).toLocaleString('pt-BR')}`);
+    console.log(`Lembrete agendado para agendamento ${appointment.id} em ${lembreteTime.toLocaleString('pt-BR')}`);
   }
 
   // Enviar lembrete para o N8N
