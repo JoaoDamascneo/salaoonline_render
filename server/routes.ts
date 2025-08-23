@@ -6142,6 +6142,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint de debug para testar lógica de timezone do scheduleLembrete
+  app.get("/webhook/debug-timezone-lembrete", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      // Simular um agendamento para 15/10/2025 às 11:00
+      const appointmentDate = new Date("2025-10-15T11:00:00.000Z");
+      const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000); // 30 minutos antes
+      
+      // Usar timezone do Brasil para comparação (ambos no mesmo timezone)
+      const now = new Date();
+      const brazilTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+      const lembreteTimeBrazil = new Date(lembreteTime.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+      
+      // Calcular delay em milissegundos usando timezone do Brasil
+      const delay = lembreteTimeBrazil.getTime() - brazilTime.getTime();
+      
+      res.json({
+        success: true,
+        test_appointment: {
+          appointment_date: appointmentDate.toISOString(),
+          appointment_date_brazil: appointmentDate.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          lembrete_time: lembreteTime.toISOString(),
+          lembrete_time_brazil: lembreteTime.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"})
+        },
+        current_time: {
+          now_utc: now.toISOString(),
+          now_brazil: now.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          brazil_time: brazilTime.toISOString(),
+          brazil_time_string: brazilTime.toLocaleString("pt-BR")
+        },
+        comparison: {
+          lembrete_time_brazil: lembreteTimeBrazil.toISOString(),
+          lembrete_time_brazil_string: lembreteTimeBrazil.toLocaleString("pt-BR"),
+          should_send_now: lembreteTimeBrazil <= brazilTime,
+          delay_ms: delay,
+          delay_days: Math.floor(delay / (1000 * 60 * 60 * 24)),
+          delay_hours: Math.floor((delay % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+        }
+      });
+      
+    } catch (error) {
+      console.error("Erro ao debug timezone:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Initialize WebSocket server
