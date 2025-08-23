@@ -369,12 +369,20 @@ export class DatabaseStorage implements IStorage {
     // Calcular horário do lembrete (30 minutos antes) no timezone Brazil
     const lembreteTime = new Date(appointmentBrazilTime.getTime() - 30 * 60 * 1000);
     
-    // Calcular delay em milissegundos (comparando com Brazil time)
-    const delay = lembreteTime.getTime() - brazilTime.getTime();
+    // Converter lembreteTime de volta para UTC para calcular o delay corretamente
+    const lembreteTimeUTC = new Date(lembreteTime.getTime() - brazilOffset);
     
-    // Se o delay for negativo (lembrete já passou), não agendar
+    // Calcular delay em milissegundos (comparando com UTC)
+    const delay = lembreteTimeUTC.getTime() - now.getTime();
+    
+    // Se o delay for negativo (lembrete já passou), enviar imediatamente
     if (delay <= 0) {
-      console.log(`Lembrete para agendamento ${appointment.id} já deveria ter sido enviado - não agendando`);
+      console.log(`Lembrete para agendamento ${appointment.id} já deveria ter sido enviado - enviando agora`);
+      try {
+        await this.enviarLembreteN8N(appointment, client, service, staffMember);
+      } catch (error) {
+        console.error(`Erro ao enviar lembrete imediato para agendamento ${appointment.id}:`, error);
+      }
       return;
     }
     
