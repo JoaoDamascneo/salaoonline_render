@@ -6538,6 +6538,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint de debug para testar a nova lógica do scheduleLembrete
+  app.post("/webhook/debug-nova-logica-lembrete", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      const now = new Date();
+      
+      // Teste 1: Agendamento para hoje às 11:00 (agora são 10:00)
+      const appointmentToday = new Date("2025-08-23T11:00:00.000Z");
+      const appointmentTodayDay = appointmentToday.getDate();
+      const appointmentTodayMonth = appointmentToday.getMonth();
+      const appointmentTodayYear = appointmentToday.getFullYear();
+      
+      const currentDay = now.getDate();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      
+      const isSameDay = appointmentTodayDay === currentDay && 
+                       appointmentTodayMonth === currentMonth && 
+                       appointmentTodayYear === currentYear;
+      
+      const lembreteTimeToday = new Date(appointmentToday.getTime() - 30 * 60 * 1000);
+      const shouldSendToday = lembreteTimeToday <= now;
+      
+      // Teste 2: Agendamento para 15/10/2025 às 11:00
+      const appointmentFuture = new Date("2025-10-15T11:00:00.000Z");
+      const appointmentFutureDay = appointmentFuture.getDate();
+      const appointmentFutureMonth = appointmentFuture.getMonth();
+      const appointmentFutureYear = appointmentFuture.getFullYear();
+      
+      const isSameDayFuture = appointmentFutureDay === currentDay && 
+                             appointmentFutureMonth === currentMonth && 
+                             appointmentFutureYear === currentYear;
+      
+      const lembreteTimeFuture = new Date(appointmentFuture.getTime() - 30 * 60 * 1000);
+      const shouldSendFuture = lembreteTimeFuture <= now;
+      
+      res.json({
+        success: true,
+        debug_info: {
+          message: "Teste da nova lógica do scheduleLembrete",
+          current_time: now.toISOString(),
+          current_time_brazil: now.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"})
+        },
+        teste_1_agendamento_hoje: {
+          appointment_date: appointmentToday.toISOString(),
+          appointment_date_brazil: appointmentToday.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          appointment_day: appointmentTodayDay,
+          appointment_month: appointmentTodayMonth,
+          appointment_year: appointmentTodayYear,
+          current_day: currentDay,
+          current_month: currentMonth,
+          current_year: currentYear,
+          is_same_day: isSameDay,
+          lembrete_time: lembreteTimeToday.toISOString(),
+          lembrete_time_brazil: lembreteTimeToday.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          should_send_now: shouldSendToday,
+          will_schedule_lembrete: isSameDay && !shouldSendToday,
+          will_send_immediately: isSameDay && shouldSendToday,
+          will_not_schedule: !isSameDay
+        },
+        teste_2_agendamento_futuro: {
+          appointment_date: appointmentFuture.toISOString(),
+          appointment_date_brazil: appointmentFuture.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          appointment_day: appointmentFutureDay,
+          appointment_month: appointmentFutureMonth,
+          appointment_year: appointmentFutureYear,
+          current_day: currentDay,
+          current_month: currentMonth,
+          current_year: currentYear,
+          is_same_day: isSameDayFuture,
+          lembrete_time: lembreteTimeFuture.toISOString(),
+          lembrete_time_brazil: lembreteTimeFuture.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          should_send_now: shouldSendFuture,
+          will_schedule_lembrete: isSameDayFuture && !shouldSendFuture,
+          will_send_immediately: isSameDayFuture && shouldSendFuture,
+          will_not_schedule: !isSameDayFuture
+        }
+      });
+      
+    } catch (error) {
+      console.error("Erro ao debug nova lógica:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Initialize WebSocket server
