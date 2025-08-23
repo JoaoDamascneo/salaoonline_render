@@ -297,12 +297,16 @@ export class DatabaseStorage implements IStorage {
     const appointmentDate = new Date(appointment.appointmentDate);
     const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000); // 30 minutos antes
     
-    // Comparação simples: se o lembrete já deveria ter sido enviado, não agendar
     const now = new Date();
     
-    // Se o lembrete já deveria ter sido enviado, não agendar
+    // Se o lembrete já deveria ter sido enviado, enviar imediatamente
     if (lembreteTime <= now) {
-      console.log(`Lembrete para agendamento ${appointment.id} já deveria ter sido enviado`);
+      console.log(`Lembrete para agendamento ${appointment.id} já deveria ter sido enviado - enviando agora`);
+      try {
+        await this.enviarLembreteN8N(appointment, client, service, staffMember);
+      } catch (error) {
+        console.error(`Erro ao enviar lembrete imediato para agendamento ${appointment.id}:`, error);
+      }
       return;
     }
     
