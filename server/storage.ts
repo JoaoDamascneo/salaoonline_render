@@ -363,50 +363,48 @@ export class DatabaseStorage implements IStorage {
     const appointmentDate = new Date(appointment.appointmentDate);
     const now = new Date();
     
-    // Converter para timezone UTC-3 (Brazil) para comparação
-    const brazilOffset = -3 * 60 * 60 * 1000; // UTC-3 em milissegundos
-    const brazilTime = new Date(now.getTime() + brazilOffset);
-    const appointmentBrazilTime = new Date(appointmentDate.getTime() + brazilOffset);
+    // Abordagem mais simples: usar toLocaleString para verificar se é o mesmo dia
+    const appointmentDateStr = appointmentDate.toLocaleDateString('pt-BR', {timeZone: 'America/Sao_Paulo'});
+    const currentDateStr = now.toLocaleDateString('pt-BR', {timeZone: 'America/Sao_Paulo'});
     
-    // Verificar se o dia e mês do agendamento são iguais ao dia atual (no timezone Brazil)
-    const appointmentDay = appointmentBrazilTime.getDate();
-    const appointmentMonth = appointmentBrazilTime.getMonth();
-    const appointmentYear = appointmentBrazilTime.getFullYear();
-    
-    const currentDay = brazilTime.getDate();
-    const currentMonth = brazilTime.getMonth();
-    const currentYear = brazilTime.getFullYear();
-    
-    // Se o dia, mês e ano não são iguais ao atual, não agendar lembrete
-    if (appointmentDay !== currentDay || appointmentMonth !== currentMonth || appointmentYear !== currentYear) {
-      console.log(`Lembrete para agendamento ${appointment.id} não será agendado - data diferente do dia atual (Brazil timezone)`);
+    // Se não for o mesmo dia, não agendar lembrete
+    if (appointmentDateStr !== currentDateStr) {
+      console.log(`Lembrete para agendamento ${appointment.id} não será agendado - data diferente do dia atual`);
+      console.log(`Data do agendamento: ${appointmentDateStr}`);
+      console.log(`Data atual: ${currentDateStr}`);
       return;
     }
     
-    // Calcular horário do lembrete (30 minutos antes) diretamente do appointment_date
+    // Calcular horário do lembrete (30 minutos antes)
     const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000);
     
-    // Calcular delay em milissegundos (comparando com UTC)
+    // Calcular delay em milissegundos
     const delay = lembreteTime.getTime() - now.getTime();
     
     // Se o delay for negativo (lembrete já passou), não enviar
     if (delay <= 0) {
       console.log(`Lembrete para agendamento ${appointment.id} já passou do horário - não enviando`);
+      console.log(`Horário atual: ${now.toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'})}`);
+      console.log(`Horário do lembrete: ${lembreteTime.toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'})}`);
       return;
     }
     
-    console.log(`Agendando lembrete para ${appointment.id} em ${delay/1000/60} minutos (${lembreteTime.toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'})})`);
+    console.log(`Agendando lembrete para ${appointment.id} em ${Math.round(delay/1000/60)} minutos`);
+    console.log(`Horário atual: ${now.toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'})}`);
+    console.log(`Horário do agendamento: ${appointmentDate.toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'})}`);
+    console.log(`Horário do lembrete: ${lembreteTime.toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'})}`);
     
     // Agendar o envio do lembrete
     setTimeout(async () => {
       try {
+        console.log(`⏰ Executando lembrete para agendamento ${appointment.id}`);
         await this.enviarLembreteN8N(appointment, client, service, staffMember);
       } catch (error) {
         console.error(`Erro ao enviar lembrete para agendamento ${appointment.id}:`, error);
       }
     }, delay);
     
-    console.log(`Lembrete agendado para agendamento ${appointment.id} em ${lembreteTime.toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'})}`);
+    console.log(`✅ Lembrete agendado para agendamento ${appointment.id} em ${lembreteTime.toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'})}`);
   }
 
 
