@@ -383,11 +383,14 @@ export class DatabaseStorage implements IStorage {
       return;
     }
     
-    // Calcular horário do lembrete (30 minutos antes) - manter em UTC
-    const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000);
+    // Calcular horário do lembrete (30 minutos antes) no timezone Brazil
+    const lembreteTime = new Date(appointmentBrazilTime.getTime() - 30 * 60 * 1000);
+    
+    // Converter lembreteTime de volta para UTC para calcular o delay corretamente
+    const lembreteTimeUTC = new Date(lembreteTime.getTime() - brazilOffset);
     
     // Calcular delay em milissegundos (comparando com UTC)
-    const delay = lembreteTime.getTime() - now.getTime();
+    const delay = lembreteTimeUTC.getTime() - now.getTime();
     
     // Se o delay for negativo (lembrete já passou), não enviar
     if (delay <= 0) {
