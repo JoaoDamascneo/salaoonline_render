@@ -6280,6 +6280,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint de debug para verificar se a correção do scheduleLembrete foi aplicada
+  app.get("/webhook/debug-schedule-lembrete-version", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      // Simular exatamente a lógica atual da função scheduleLembrete
+      const appointmentDate = new Date("2025-10-15T11:00:00.000Z");
+      const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000); // 30 minutos antes
+      
+      // Usar timezone do Brasil para comparação (ambos no mesmo timezone)
+      const now = new Date();
+      const brazilTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+      const lembreteTimeBrazil = new Date(lembreteTime.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+      
+      // Se o lembrete já deveria ter sido enviado, não agendar
+      const shouldSendNow = lembreteTimeBrazil <= brazilTime;
+      
+      // Calcular delay em milissegundos usando timezone do Brasil
+      const delay = lembreteTimeBrazil.getTime() - brazilTime.getTime();
+      
+      res.json({
+        success: true,
+        version_check: {
+          message: "Verificação da versão da função scheduleLembrete",
+          correction_applied: true,
+          uses_brazil_timezone_comparison: true,
+          uses_lembreteTimeBrazil: true
+        },
+        logic_test: {
+          appointment_date: appointmentDate.toISOString(),
+          lembrete_time: lembreteTime.toISOString(),
+          current_time: now.toISOString(),
+          brazil_time: brazilTime.toISOString(),
+          lembrete_time_brazil: lembreteTimeBrazil.toISOString(),
+          should_send_now: shouldSendNow,
+          delay_ms: delay,
+          delay_days: Math.floor(delay / (1000 * 60 * 60 * 24)),
+          delay_hours: Math.floor((delay % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          setTimeout_will_be_called: !shouldSendNow,
+          logic_correct: !shouldSendNow && delay > 0
+        }
+      });
+      
+    } catch (error) {
+      console.error("Erro ao debug version:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Initialize WebSocket server

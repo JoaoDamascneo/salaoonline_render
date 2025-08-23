@@ -811,6 +811,7 @@ export class DatabaseStorage implements IStorage {
     const now = new Date();
     const brazilTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
     const thirtyMinutesFromNow = new Date(brazilTime.getTime() + 30 * 60 * 1000); // 30 minutos à frente
+    const thirtyMinutesAgo = new Date(brazilTime.getTime() - 30 * 60 * 1000); // 30 minutos atrás
     
     // Subconsulta para pegar o próximo agendamento de cada cliente
     const subquery = db
@@ -821,7 +822,7 @@ export class DatabaseStorage implements IStorage {
       .from(appointments)
       .where(and(
         eq(appointments.establishmentId, establishmentId),
-        gte(appointments.appointmentDate, brazilTime),
+        gte(appointments.appointmentDate, thirtyMinutesAgo),
         lte(appointments.appointmentDate, thirtyMinutesFromNow),
         or(
           eq(appointments.status, 'confirmed'),
