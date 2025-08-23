@@ -6077,6 +6077,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint de debug para agendamento 15/10/2025
+  app.get("/webhook/debug-agendamento-15-10", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      const establishmentId = 2;
+      const appointments = await storage.getAppointments(establishmentId);
+      
+      // Buscar agendamento do dia 15/10/2025
+      const targetDate = "2025-10-15T12:40:00.000Z";
+      const targetAppointment = appointments.find(apt => 
+        apt.appointmentDate === targetDate
+      );
+      
+      if (!targetAppointment) {
+        return res.json({
+          success: false,
+          message: "Agendamento do dia 15/10/2025 não encontrado"
+        });
+      }
+      
+      // Calcular quando o lembrete deveria ser enviado
+      const appointmentTime = new Date(targetAppointment.appointmentDate);
+      const reminderTime = new Date(appointmentTime.getTime() - 30 * 60 * 1000); // 30 minutos antes
+      const currentTime = new Date();
+      
+      // Verificar se o lembrete deveria ter sido enviado
+      const shouldHaveBeenSent = currentTime >= reminderTime;
+      const timeUntilReminder = reminderTime.getTime() - currentTime.getTime();
+      
+      res.json({
+        success: true,
+        appointment: {
+          id: targetAppointment.id,
+          client_name: targetAppointment.clientName,
+          service_name: targetAppointment.serviceName,
+          appointment_date: targetAppointment.appointmentDate,
+          status: targetAppointment.status
+        },
+        reminder_analysis: {
+          appointment_time: appointmentTime.toISOString(),
+          reminder_time: reminderTime.toISOString(),
+          current_time: currentTime.toISOString(),
+          should_have_been_sent: shouldHaveBeenSent,
+          time_until_reminder_ms: timeUntilReminder,
+          time_until_reminder_days: Math.floor(timeUntilReminder / (1000 * 60 * 60 * 24)),
+          time_until_reminder_hours: Math.floor((timeUntilReminder % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+        },
+        debug_info: {
+          appointment_created_at: targetAppointment.createdAt,
+          appointment_updated_at: targetAppointment.updatedAt
+        }
+      });
+      
+    } catch (error) {
+      console.error("Erro ao debug agendamento 15/10:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Initialize WebSocket server
