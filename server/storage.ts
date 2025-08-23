@@ -311,16 +311,33 @@ export class DatabaseStorage implements IStorage {
       for (const establishment of establishments) {
         const appointments = await this.getAppointments(establishment.id);
         
-        // Filtrar agendamentos do dia atual
+        // Filtrar agendamentos do dia atual que ainda não passaram do horário do lembrete
         const todayAppointments = appointments.filter(apt => {
           const appointmentDate = new Date(apt.appointmentDate);
-          return appointmentDate.getDate() === currentDay &&
-                 appointmentDate.getMonth() === currentMonth &&
-                 appointmentDate.getFullYear() === currentYear &&
-                 (apt.status === 'confirmed' || apt.status === 'scheduled');
+          const appointmentDay = appointmentDate.getDate();
+          const appointmentMonth = appointmentDate.getMonth();
+          const appointmentYear = appointmentDate.getFullYear();
+          
+          // Verificar se é o dia atual
+          const isSameDay = appointmentDay === currentDay && 
+                           appointmentMonth === currentMonth && 
+                           appointmentYear === currentYear;
+          
+          if (!isSameDay || !(apt.status === 'confirmed' || apt.status === 'scheduled')) {
+            return false;
+          }
+          
+          // Verificar se o lembrete ainda não passou (30 minutos antes)
+          const brazilOffset = -3 * 60 * 60 * 1000; // UTC-3
+          const appointmentBrazilTime = new Date(appointmentDate.getTime() + brazilOffset);
+          const lembreteTime = new Date(appointmentBrazilTime.getTime() - 30 * 60 * 1000);
+          const lembreteTimeUTC = new Date(lembreteTime.getTime() - brazilOffset);
+          
+          // Só agendar se o lembrete ainda não passou
+          return lembreteTimeUTC.getTime() > now.getTime();
         });
         
-        console.log(`📅 Estabelecimento ${establishment.id}: ${todayAppointments.length} agendamentos para hoje`);
+        console.log(`📅 Estabelecimento ${establishment.id}: ${todayAppointments.length} agendamentos para reagendar lembretes`);
         
         for (const appointment of todayAppointments) {
           const [client, service, staffMember] = await Promise.all([
@@ -329,7 +346,7 @@ export class DatabaseStorage implements IStorage {
             this.getStaffMember(appointment.staffId, appointment.establishmentId)
           ]);
           
-          // Reagendar lembrete
+          // Agendar lembrete apenas para agendamentos que ainda não passaram do horário
           await this.scheduleLembrete(appointment, client, service, staffMember);
         }
       }
