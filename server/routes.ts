@@ -6205,7 +6205,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         schedule_lembrete_analysis: {
           appointment_date: appointmentDate.toISOString(),
-          appointment_date_brazil: appointmentDate.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
           lembrete_time: lembreteTime.toISOString(),
           lembrete_time_brazil: lembreteTime.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
           current_time: now.toISOString(),
@@ -6290,7 +6289,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         schedule_lembrete_analysis: {
           appointment_date: appointmentDate.toISOString(),
-          appointment_date_brazil: appointmentDate.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
           lembrete_time: lembreteTime.toISOString(),
           lembrete_time_brazil: lembreteTime.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
           current_time: now.toISOString(),
@@ -6483,7 +6481,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         teste_1_agendamento_hoje: {
           appointment_date: appointmentToday.toISOString(),
-          appointment_date_brazil: appointmentToday.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
           appointment_day: appointmentTodayDay,
           appointment_month: appointmentTodayMonth,
           appointment_year: appointmentTodayYear,
@@ -6501,7 +6498,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         teste_2_agendamento_futuro: {
           appointment_date: appointmentFuture.toISOString(),
-          appointment_date_brazil: appointmentFuture.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
           appointment_day: appointmentFutureDay,
           appointment_month: appointmentFutureMonth,
           appointment_year: appointmentFutureYear,
@@ -6579,7 +6575,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           client_name: appointment.clientName,
           service_name: appointment.serviceName,
           appointment_date: appointmentDate.toISOString(),
-          appointment_date_brazil: appointmentDate.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
           status: appointment.status,
           lembrete_time: lembreteTime.toISOString(),
           lembrete_time_brazil: lembreteTime.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
