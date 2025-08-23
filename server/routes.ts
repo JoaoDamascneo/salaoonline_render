@@ -6560,13 +6560,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
                          appointmentMonth === currentMonth && 
                          appointmentYear === currentYear;
         
-        // Calcular horário do lembrete (30 minutos antes) no timezone Brazil
-        const lembreteTime = new Date(appointmentBrazilTime.getTime() - 30 * 60 * 1000);
+        // Calcular horário do lembrete (30 minutos antes) diretamente do appointment_date
+        const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000);
         
-        // Converter lembreteTime de volta para UTC para calcular o delay corretamente
-        const lembreteTimeUTC = new Date(lembreteTime.getTime() - brazilOffset);
+        // Para o debug, converter para timezone Brazil
+        const lembreteTimeBrazil = new Date(lembreteTime.getTime() + brazilOffset);
         
-        const delay = lembreteTimeUTC.getTime() - now.getTime();
+        const delay = lembreteTime.getTime() - now.getTime();
         const shouldHaveBeenSent = delay <= 0;
         const willBeSent = isSameDay && delay > 0;
         
