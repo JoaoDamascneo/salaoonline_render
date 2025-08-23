@@ -6545,22 +6545,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const appointmentsWithLembretes = activeAppointments.map(appointment => {
         const appointmentDate = new Date(appointment.appointmentDate);
-        const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000);
+        
+        // Converter para timezone UTC-3 (Brazil) para comparação
+        const brazilOffset = -3 * 60 * 60 * 1000; // UTC-3 em milissegundos
+        const brazilTime = new Date(now.getTime() + brazilOffset);
+        const appointmentBrazilTime = new Date(appointmentDate.getTime() + brazilOffset);
         
         // Verificar se é o dia atual
-        const appointmentDay = appointmentDate.getDate();
-        const appointmentMonth = appointmentDate.getMonth();
-        const appointmentYear = appointmentDate.getFullYear();
+        const appointmentDay = appointmentBrazilTime.getDate();
+        const appointmentMonth = appointmentBrazilTime.getMonth();
+        const appointmentYear = appointmentBrazilTime.getFullYear();
         
-        const currentDay = now.getDate();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
+        const currentDay = brazilTime.getDate();
+        const currentMonth = brazilTime.getMonth();
+        const currentYear = brazilTime.getFullYear();
         
         const isSameDay = appointmentDay === currentDay && 
                          appointmentMonth === currentMonth && 
                          appointmentYear === currentYear;
         
-        const delay = lembreteTime.getTime() - now.getTime();
+        // Calcular horário do lembrete (30 minutos antes) no timezone Brazil
+        const lembreteTime = new Date(appointmentBrazilTime.getTime() - 30 * 60 * 1000);
+        
+        // Converter lembreteTime de volta para UTC para calcular o delay corretamente
+        const lembreteTimeUTC = new Date(lembreteTime.getTime() - brazilOffset);
+        
+        const delay = lembreteTimeUTC.getTime() - now.getTime();
         const shouldHaveBeenSent = delay <= 0;
         const willBeSent = isSameDay && delay > 0;
         
