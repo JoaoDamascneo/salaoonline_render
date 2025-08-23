@@ -6206,11 +6206,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         schedule_lembrete_analysis: {
           appointment_date: appointmentDate.toISOString(),
           lembrete_time: lembreteTime.toISOString(),
-          lembrete_time_brazil: lembreteTime.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
           current_time: now.toISOString(),
           current_time_brazil: now.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
           brazil_time: brazilTime.toISOString(),
-          lembrete_time_brazil_converted: lembreteTimeBrazil.toISOString(),
           should_send_now: shouldSendNow,
           delay_ms: delay,
           delay_days: Math.floor(delay / (1000 * 60 * 60 * 24)),
@@ -6290,11 +6288,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         schedule_lembrete_analysis: {
           appointment_date: appointmentDate.toISOString(),
           lembrete_time: lembreteTime.toISOString(),
-          lembrete_time_brazil: lembreteTime.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
           current_time: now.toISOString(),
           current_time_brazil: now.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
           brazil_time: brazilTime.toISOString(),
-          lembrete_time_brazil_converted: lembreteTimeBrazil.toISOString(),
           should_send_now: shouldSendNow,
           delay_ms: delay,
           delay_days: Math.floor(delay / (1000 * 60 * 60 * 24)),
@@ -6489,7 +6485,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           current_year: currentYear,
           is_same_day: isSameDay,
           lembrete_time: lembreteTimeToday.toISOString(),
-          lembrete_time_brazil: lembreteTimeToday.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
           should_send_now: shouldSendToday,
           will_schedule_lembrete: isSameDay && !shouldSendToday,
           will_send_immediately: isSameDay && shouldSendToday,
@@ -6506,7 +6501,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           current_year: currentYear,
           is_same_day: isSameDayFuture,
           lembrete_time: lembreteTimeFuture.toISOString(),
-          lembrete_time_brazil: lembreteTimeFuture.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
           should_send_now: shouldSendFuture,
           will_schedule_lembrete: isSameDayFuture && !shouldSendFuture,
           will_send_immediately: isSameDayFuture && shouldSendFuture,
@@ -6560,15 +6554,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                          appointmentMonth === currentMonth && 
                          appointmentYear === currentYear;
         
-        // O appointment_date está salvo como UTC, mas representa o horário local (UTC-3)
-        // Então precisamos converter para UTC real antes de calcular
-        const appointmentDateUTC = new Date(appointmentDate.getTime() + brazilOffset);
-        
-        // Calcular horário do lembrete (30 minutos antes) do UTC real
-        const lembreteTime = new Date(appointmentDateUTC.getTime() - 30 * 60 * 1000);
-        
-        // Para o debug, converter para timezone Brazil
-        const lembreteTimeBrazil = new Date(lembreteTime.getTime() + brazilOffset);
+        // Calcular horário do lembrete (30 minutos antes) diretamente do appointment_date
+        const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000);
         
         const delay = lembreteTime.getTime() - now.getTime();
         const shouldHaveBeenSent = delay <= 0;
@@ -6581,7 +6568,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           appointment_date: appointmentDate.toISOString(),
           status: appointment.status,
           lembrete_time: lembreteTime.toISOString(),
-          lembrete_time_brazil: lembreteTime.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
           is_same_day: isSameDay,
           delay_minutes: Math.floor(delay / (1000 * 60)),
           should_have_been_sent: shouldHaveBeenSent,
