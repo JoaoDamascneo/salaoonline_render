@@ -6334,6 +6334,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint de debug para simular criação de agendamento e verificar scheduleLembrete
+  app.post("/webhook/debug-create-appointment-full", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      // Simular exatamente a lógica da função scheduleLembrete
+      const appointmentDate = new Date("2025-10-15T11:00:00.000Z");
+      const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000); // 30 minutos antes
+      
+      // Usar timezone do Brasil para comparação (ambos no mesmo timezone)
+      const now = new Date();
+      const brazilTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+      const lembreteTimeBrazil = new Date(lembreteTime.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+      
+      // Se o lembrete já deveria ter sido enviado, não agendar
+      const shouldSendNow = lembreteTimeBrazil <= brazilTime;
+      
+      // Calcular delay em milissegundos usando timezone do Brasil
+      const delay = lembreteTimeBrazil.getTime() - brazilTime.getTime();
+      
+      // Simular o que aconteceria se o lembrete fosse enviado imediatamente
+      const mockLembreteData = {
+        cliente_nome: "Cliente Teste",
+        cliente_id: 1,
+        cliente_telefone: "11999999999",
+        cliente_email: "teste@teste.com",
+        estabelecimento_nome: "Estabelecimento Teste",
+        estabelecimento_id: 2,
+        instance_id: "test-instance",
+        servico_nome: "Serviço Teste",
+        servico_preco: "50.00",
+        servico_duracao: 60,
+        profissional_nome: "Profissional Teste",
+        agendamento_id: 999,
+        agendamento_data: appointmentDate.toLocaleDateString('pt-BR'),
+        agendamento_hora: appointmentDate.toLocaleTimeString('pt-BR', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        agendamento_data_completa: appointmentDate.toISOString(),
+        agendamento_status: "confirmed",
+        agendamento_observacoes: "Teste de debug"
+      };
+      
+      res.json({
+        success: true,
+        debug_info: {
+          message: "Simulação completa da criação de agendamento",
+          appointment_created: {
+            id: 999,
+            appointmentDate: appointmentDate.toISOString(),
+            establishmentId: 2,
+            status: "confirmed"
+          }
+        },
+        schedule_lembrete_analysis: {
+          appointment_date: appointmentDate.toISOString(),
+          appointment_date_brazil: appointmentDate.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          lembrete_time: lembreteTime.toISOString(),
+          lembrete_time_brazil: lembreteTime.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          current_time: now.toISOString(),
+          current_time_brazil: now.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          brazil_time: brazilTime.toISOString(),
+          lembrete_time_brazil_converted: lembreteTimeBrazil.toISOString(),
+          should_send_now: shouldSendNow,
+          delay_ms: delay,
+          delay_days: Math.floor(delay / (1000 * 60 * 60 * 24)),
+          delay_hours: Math.floor((delay % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          setTimeout_will_be_called: !shouldSendNow,
+          logic_correct: !shouldSendNow && delay > 0
+        },
+        if_lembrete_sent_now: {
+          would_send_webhook: shouldSendNow,
+          webhook_data: mockLembreteData,
+          n8n_url: "https://n8n-n8n-start.ayp7v6.easypanel.host/webhook/lembrete"
+        }
+      });
+      
+    } catch (error) {
+      console.error("Erro ao debug create appointment full:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Initialize WebSocket server
