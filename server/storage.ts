@@ -297,10 +297,13 @@ export class DatabaseStorage implements IStorage {
     const appointmentDate = new Date(appointment.appointmentDate);
     const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000); // 30 minutos antes
     
-    // Usar timezone do Brasil para comparação (ambos no mesmo timezone)
+    // Usar timezone do Brasil para comparação (abordagem mais robusta)
     const now = new Date();
-    const brazilTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
-    const lembreteTimeBrazil = new Date(lembreteTime.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+    
+    // Converter para timezone do Brasil usando offset
+    const brazilOffset = -3 * 60 * 60 * 1000; // UTC-3 em milissegundos
+    const brazilTime = new Date(now.getTime() + brazilOffset);
+    const lembreteTimeBrazil = new Date(lembreteTime.getTime() + brazilOffset);
     
     // Se o lembrete já deveria ter sido enviado, não agendar
     if (lembreteTimeBrazil <= brazilTime) {
