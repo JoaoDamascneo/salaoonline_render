@@ -6423,6 +6423,121 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint de debug para testar o webhook POST do lembrete
+  app.post("/webhook/debug-test-webhook", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      // Simular dados de um agendamento para 15/10/2025 às 11:00
+      const mockAppointment = {
+        id: 999,
+        appointmentDate: "2025-10-15T11:00:00.000Z",
+        establishmentId: 2,
+        clientId: 1,
+        staffId: 1,
+        serviceId: 1,
+        status: "confirmed",
+        duration: 60,
+        notes: "Teste de debug webhook"
+      };
+      
+      const mockClient = {
+        id: 1,
+        name: "Cliente Teste Webhook",
+        email: "teste@teste.com",
+        phone: "11999999999"
+      };
+      
+      const mockService = {
+        id: 1,
+        name: "Serviço Teste Webhook",
+        price: "50.00"
+      };
+      
+      const mockStaff = {
+        id: 1,
+        name: "Profissional Teste Webhook"
+      };
+      
+      const mockEstablishment = {
+        id: 2,
+        name: "Estabelecimento Teste Webhook"
+      };
+      
+      const mockWebhookData = {
+        instanceId: "test-instance-webhook"
+      };
+      
+      // Simular exatamente a lógica da função enviarLembreteN8N
+      const lembreteData = {
+        cliente_nome: mockClient.name,
+        cliente_id: mockAppointment.clientId,
+        cliente_telefone: mockClient.phone,
+        cliente_email: mockClient.email,
+        estabelecimento_nome: mockEstablishment.name,
+        estabelecimento_id: mockAppointment.establishmentId,
+        instance_id: mockWebhookData.instanceId,
+        servico_nome: mockService.name,
+        servico_preco: mockService.price,
+        servico_duracao: mockAppointment.duration,
+        profissional_nome: mockStaff.name,
+        agendamento_id: mockAppointment.id,
+        agendamento_data: new Date(mockAppointment.appointmentDate).toLocaleDateString('pt-BR'),
+        agendamento_hora: new Date(mockAppointment.appointmentDate).toLocaleTimeString('pt-BR', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        agendamento_data_completa: mockAppointment.appointmentDate,
+        agendamento_status: mockAppointment.status,
+        agendamento_observacoes: mockAppointment.notes
+      };
+
+      const n8nWebhookUrl = 'https://n8n-n8n-start.ayp7v6.easypanel.host/webhook/lembrete';
+      
+      // Simular o envio do webhook (sem enviar realmente)
+      const webhookPayload = {
+        success: true,
+        total_lembretes: 1,
+        lembretes: [lembreteData],
+        timestamp: new Date().toISOString(),
+        message: `Lembrete automático enviado para ${mockClient.name}`
+      };
+      
+      res.json({
+        success: true,
+        debug_info: {
+          message: "Teste do webhook POST do lembrete",
+          appointment: mockAppointment,
+          client: mockClient,
+          service: mockService,
+          staff: mockStaff,
+          establishment: mockEstablishment,
+          webhook_data: mockWebhookData
+        },
+        webhook_analysis: {
+          n8n_url: n8nWebhookUrl,
+          payload: webhookPayload,
+          lembrete_data: lembreteData,
+          appointment_date_formatted: new Date(mockAppointment.appointmentDate).toLocaleDateString('pt-BR'),
+          appointment_time_formatted: new Date(mockAppointment.appointmentDate).toLocaleTimeString('pt-BR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          }),
+          would_send_webhook: true
+        }
+      });
+      
+    } catch (error) {
+      console.error("Erro ao debug webhook:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Initialize WebSocket server
