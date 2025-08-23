@@ -343,12 +343,6 @@ export class DatabaseStorage implements IStorage {
 
   // Agendar lembrete automático para 30 minutos antes do agendamento
   private async scheduleLembrete(appointment: Appointment, client: Client | undefined, service: Service | undefined, staffMember: Staff | undefined) {
-    // Verificar se o lembrete já foi enviado
-    if (appointment.lembreteEnviado) {
-      console.log(`Lembrete para agendamento ${appointment.id} já foi enviado anteriormente - pulando`);
-      return;
-    }
-    
     const appointmentDate = new Date(appointment.appointmentDate);
     const now = new Date();
     
@@ -381,14 +375,9 @@ export class DatabaseStorage implements IStorage {
     // Calcular delay em milissegundos (comparando com UTC)
     const delay = lembreteTimeUTC.getTime() - now.getTime();
     
-    // Se o delay for negativo (lembrete já passou), enviar imediatamente
+    // Se o delay for negativo (lembrete já passou), não enviar
     if (delay <= 0) {
-      console.log(`Lembrete para agendamento ${appointment.id} já deveria ter sido enviado - enviando agora`);
-      try {
-        await this.enviarLembreteN8N(appointment, client, service, staffMember);
-      } catch (error) {
-        console.error(`Erro ao enviar lembrete imediato para agendamento ${appointment.id}:`, error);
-      }
+      console.log(`Lembrete para agendamento ${appointment.id} já passou do horário - não enviando`);
       return;
     }
     
@@ -406,41 +395,7 @@ export class DatabaseStorage implements IStorage {
     console.log(`Lembrete agendado para agendamento ${appointment.id} em ${lembreteTime.toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'})}`);
   }
 
-  // Marcar agendamento como "lembrete enviado"
-  private async marcarLembreteEnviado(appointmentId: number): Promise<void> {
-    try {
-      await db
-        .update(appointments)
-        .set({ 
-          lembreteEnviado: true,
-          updatedAt: new Date()
-        })
-        .where(eq(appointments.id, appointmentId));
-      
-      console.log(`✅ Agendamento ${appointmentId} marcado como "lembrete enviado"`);
-    } catch (error) {
-      console.error(`❌ Erro ao marcar lembrete enviado para agendamento ${appointmentId}:`, error);
-    }
-  }
 
-  // Resetar lembretes enviados para um estabelecimento (útil para testes)
-  async resetLembretesEnviados(establishmentId: number): Promise<void> {
-    try {
-      const result = await db
-        .update(appointments)
-        .set({ 
-          lembreteEnviado: false,
-          updatedAt: new Date()
-        })
-        .where(eq(appointments.establishmentId, establishmentId))
-        .returning();
-      
-      console.log(`✅ Resetados ${result.length} lembretes para estabelecimento ${establishmentId}`);
-    } catch (error) {
-      console.error(`❌ Erro ao resetar lembretes para estabelecimento ${establishmentId}:`, error);
-      throw error;
-    }
-  }
 
   // Enviar lembrete para o N8N
   private async enviarLembreteN8N(appointment: Appointment, client: Client | undefined, service: Service | undefined, staffMember: Staff | undefined) {
@@ -495,9 +450,6 @@ export class DatabaseStorage implements IStorage {
       
       if (response.ok) {
         console.log(`✅ Lembrete enviado - Cliente: ${client?.name}, Agendamento: ${appointment.id}`);
-        
-        // Marcar o agendamento como "lembrete enviado"
-        await this.marcarLembreteEnviado(appointment.id);
       } else {
         console.error(`❌ Erro ao enviar lembrete - Status: ${response.status}`);
       }

@@ -6142,57 +6142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Endpoint de debug para testar lógica de timezone do scheduleLembrete
-  app.get("/webhook/debug-timezone-lembrete", async (req, res) => {
-    try {
-      res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      
-      // Simular um agendamento para 15/10/2025 às 11:00
-      const appointmentDate = new Date("2025-10-15T11:00:00.000Z");
-      const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000); // 30 minutos antes
-      
-      // Usar timezone do Brasil para comparação (ambos no mesmo timezone)
-      const now = new Date();
-      const brazilTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
-      const lembreteTimeBrazil = new Date(lembreteTime.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
-      
-      // Calcular delay em milissegundos usando timezone do Brasil
-      const delay = lembreteTimeBrazil.getTime() - brazilTime.getTime();
-      
-      res.json({
-        success: true,
-        test_appointment: {
-          appointment_date: appointmentDate.toISOString(),
-          appointment_date_brazil: appointmentDate.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
-          lembrete_time: lembreteTime.toISOString(),
-          lembrete_time_brazil: lembreteTime.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"})
-        },
-        current_time: {
-          now_utc: now.toISOString(),
-          now_brazil: now.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
-          brazil_time: brazilTime.toISOString(),
-          brazil_time_string: brazilTime.toLocaleString("pt-BR")
-        },
-        comparison: {
-          lembrete_time_brazil: lembreteTimeBrazil.toISOString(),
-          lembrete_time_brazil_string: lembreteTimeBrazil.toLocaleString("pt-BR"),
-          should_send_now: lembreteTimeBrazil <= brazilTime,
-          delay_ms: delay,
-          delay_days: Math.floor(delay / (1000 * 60 * 60 * 24)),
-          delay_hours: Math.floor((delay % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-        }
-      });
-      
-    } catch (error) {
-      console.error("Erro ao debug timezone:", error);
-      res.status(500).json({
-        success: false,
-        error: "Erro interno do servidor",
-        message: error instanceof Error ? error.message : "Erro desconhecido"
-      });
-    }
-  });
+
 
   // Endpoint de debug para simular criação de agendamento e testar scheduleLembrete
   app.post("/webhook/debug-create-appointment", async (req, res) => {
@@ -6280,59 +6230,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Endpoint de debug para verificar se a correção do scheduleLembrete foi aplicada
-  app.get("/webhook/debug-schedule-lembrete-version", async (req, res) => {
-    try {
-      res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      
-      // Simular exatamente a lógica atual da função scheduleLembrete
-      const appointmentDate = new Date("2025-10-15T11:00:00.000Z");
-      const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000); // 30 minutos antes
-      
-      // Usar timezone do Brasil para comparação (ambos no mesmo timezone)
-      const now = new Date();
-      const brazilTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
-      const lembreteTimeBrazil = new Date(lembreteTime.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
-      
-      // Se o lembrete já deveria ter sido enviado, não agendar
-      const shouldSendNow = lembreteTimeBrazil <= brazilTime;
-      
-      // Calcular delay em milissegundos usando timezone do Brasil
-      const delay = lembreteTimeBrazil.getTime() - brazilTime.getTime();
-      
-      res.json({
-        success: true,
-        version_check: {
-          message: "Verificação da versão da função scheduleLembrete",
-          correction_applied: true,
-          uses_brazil_timezone_comparison: true,
-          uses_lembreteTimeBrazil: true
-        },
-        logic_test: {
-          appointment_date: appointmentDate.toISOString(),
-          lembrete_time: lembreteTime.toISOString(),
-          current_time: now.toISOString(),
-          brazil_time: brazilTime.toISOString(),
-          lembrete_time_brazil: lembreteTimeBrazil.toISOString(),
-          should_send_now: shouldSendNow,
-          delay_ms: delay,
-          delay_days: Math.floor(delay / (1000 * 60 * 60 * 24)),
-          delay_hours: Math.floor((delay % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-          setTimeout_will_be_called: !shouldSendNow,
-          logic_correct: !shouldSendNow && delay > 0
-        }
-      });
-      
-    } catch (error) {
-      console.error("Erro ao debug version:", error);
-      res.status(500).json({
-        success: false,
-        error: "Erro interno do servidor",
-        message: error instanceof Error ? error.message : "Erro desconhecido"
-      });
-    }
-  });
+
 
   // Endpoint de debug para simular criação de agendamento e verificar scheduleLembrete
   app.post("/webhook/debug-create-appointment-full", async (req, res) => {
@@ -6736,25 +6634,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Resetar lembretes enviados (útil para testes)
-  app.post("/webhook/reset-lembretes/:establishmentId", async (req, res) => {
+
+
+  // Executar migração para adicionar campo lembrete_enviado (temporário)
+  app.post("/webhook/execute-migration", async (req, res) => {
     try {
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Access-Control-Allow-Origin', '*');
       
-      const establishmentId = parseInt(req.params.establishmentId);
-      console.log(`🔄 Resetando lembretes para estabelecimento ${establishmentId}...`);
+      console.log("🔄 Executando migração para adicionar campo lembrete_enviado...");
       
-      await storage.resetLembretesEnviados(establishmentId);
+      // Executar a migração SQL
+      await db.execute(sql`ALTER TABLE "appointments" ADD COLUMN IF NOT EXISTS "lembrete_enviado" boolean DEFAULT false`);
       
       res.json({
         success: true,
-        message: `Lembretes resetados para estabelecimento ${establishmentId}`,
+        message: "Migração executada com sucesso - campo lembrete_enviado adicionado",
         timestamp: new Date().toISOString()
       });
       
     } catch (error) {
-      console.error("Erro ao resetar lembretes:", error);
+      console.error("Erro ao executar migração:", error);
       res.status(500).json({
         success: false,
         error: "Erro interno do servidor",

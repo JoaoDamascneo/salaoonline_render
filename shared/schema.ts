@@ -164,7 +164,6 @@ export const appointments = pgTable("appointments", {
   duration: integer("duration").notNull(), // in minutes
   status: varchar("status", { length: 50 }).default("pending"),
   notes: text("notes"),
-  lembreteEnviado: boolean("lembrete_enviado").default(false), // Controla se o lembrete já foi enviado
   createdAt: timestamp("created_at").default(brazilNow()),
   updatedAt: timestamp("updated_at").default(brazilNow()),
 });
