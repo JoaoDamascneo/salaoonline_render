@@ -387,7 +387,7 @@ export class DatabaseStorage implements IStorage {
     const lembreteTime = new Date(appointmentBrazilTime.getTime() - 30 * 60 * 1000);
     
     // Converter lembreteTime de volta para UTC para calcular o delay corretamente
-    const lembreteTimeUTC = new Date(lembreteTime.getTime() - brazilOffset);
+    const lembreteTimeUTC = new Date(lembreteTime.getTime() + brazilOffset);
     
     // Calcular delay em milissegundos (comparando com UTC)
     const delay = lembreteTimeUTC.getTime() - now.getTime();
