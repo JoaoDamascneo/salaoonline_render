@@ -6194,6 +6194,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint de debug para simular criação de agendamento e testar scheduleLembrete
+  app.post("/webhook/debug-create-appointment", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      // Simular dados de um agendamento para 15/10/2025 às 11:00
+      const mockAppointment = {
+        id: 999,
+        appointmentDate: new Date("2025-10-15T11:00:00.000Z"),
+        establishmentId: 2,
+        clientId: 1,
+        staffId: 1,
+        serviceId: 1,
+        status: "confirmed",
+        duration: 60,
+        notes: "Teste de debug"
+      };
+      
+      const mockClient = {
+        id: 1,
+        name: "Cliente Teste",
+        email: "teste@teste.com",
+        phone: "11999999999"
+      };
+      
+      const mockService = {
+        id: 1,
+        name: "Serviço Teste",
+        price: "50.00"
+      };
+      
+      const mockStaff = {
+        id: 1,
+        name: "Profissional Teste"
+      };
+      
+      // Simular a lógica do scheduleLembrete
+      const appointmentDate = new Date(mockAppointment.appointmentDate);
+      const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000); // 30 minutos antes
+      
+      // Usar timezone do Brasil para comparação (ambos no mesmo timezone)
+      const now = new Date();
+      const brazilTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+      const lembreteTimeBrazil = new Date(lembreteTime.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+      
+      // Se o lembrete já deveria ter sido enviado, não agendar
+      const shouldSendNow = lembreteTimeBrazil <= brazilTime;
+      
+      // Calcular delay em milissegundos usando timezone do Brasil
+      const delay = lembreteTimeBrazil.getTime() - brazilTime.getTime();
+      
+      res.json({
+        success: true,
+        debug_info: {
+          message: "Simulação de criação de agendamento",
+          appointment_created: mockAppointment,
+          schedule_lembrete_called: true
+        },
+        schedule_lembrete_analysis: {
+          appointment_date: appointmentDate.toISOString(),
+          appointment_date_brazil: appointmentDate.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          lembrete_time: lembreteTime.toISOString(),
+          lembrete_time_brazil: lembreteTime.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          current_time: now.toISOString(),
+          current_time_brazil: now.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          brazil_time: brazilTime.toISOString(),
+          lembrete_time_brazil_converted: lembreteTimeBrazil.toISOString(),
+          should_send_now: shouldSendNow,
+          delay_ms: delay,
+          delay_days: Math.floor(delay / (1000 * 60 * 60 * 24)),
+          delay_hours: Math.floor((delay % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          setTimeout_will_be_called: !shouldSendNow
+        }
+      });
+      
+    } catch (error) {
+      console.error("Erro ao debug create appointment:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Initialize WebSocket server
