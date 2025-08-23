@@ -6630,6 +6630,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint de debug para verificar agendamentos e lembretes
+  app.get("/webhook/debug-agendamentos-lembretes/:establishmentId", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      const establishmentId = parseInt(req.params.establishmentId);
+      const appointments = await storage.getAppointments(establishmentId);
+      const now = new Date();
+      
+      // Filtrar apenas agendamentos confirmados/scheduled
+      const activeAppointments = appointments.filter(apt => 
+        apt.status === 'confirmed' || apt.status === 'scheduled'
+      );
+      
+      const appointmentsWithLembretes = activeAppointments.map(appointment => {
+        const appointmentDate = new Date(appointment.appointmentDate);
+        const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000);
+        
+        // Verificar se é o dia atual
+        const appointmentDay = appointmentDate.getDate();
+        const appointmentMonth = appointmentDate.getMonth();
+        const appointmentYear = appointmentDate.getFullYear();
+        
+        const currentDay = now.getDate();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        
+        const isSameDay = appointmentDay === currentDay && 
+                         appointmentMonth === currentMonth && 
+                         appointmentYear === currentYear;
+        
+        const delay = lembreteTime.getTime() - now.getTime();
+        const shouldHaveBeenSent = delay <= 0;
+        const willBeSent = isSameDay && delay > 0;
+        
+        return {
+          id: appointment.id,
+          client_name: appointment.clientName,
+          service_name: appointment.serviceName,
+          appointment_date: appointmentDate.toISOString(),
+          appointment_date_brazil: appointmentDate.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          status: appointment.status,
+          lembrete_time: lembreteTime.toISOString(),
+          lembrete_time_brazil: lembreteTime.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          is_same_day: isSameDay,
+          delay_minutes: Math.floor(delay / (1000 * 60)),
+          should_have_been_sent: shouldHaveBeenSent,
+          will_be_sent: willBeSent,
+          lembrete_status: isSameDay ? (shouldHaveBeenSent ? "DEVERIA TER SIDO ENVIADO" : "SERÁ ENVIADO") : "NÃO SERÁ ENVIADO (dia diferente)"
+        };
+      });
+      
+      res.json({
+        success: true,
+        debug_info: {
+          current_time: now.toISOString(),
+          current_time_brazil: now.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          establishment_id: establishmentId,
+          total_appointments: appointments.length,
+          active_appointments: activeAppointments.length
+        },
+        appointments_with_lembretes: appointmentsWithLembretes,
+        summary: {
+          should_have_been_sent: appointmentsWithLembretes.filter(apt => apt.should_have_been_sent).length,
+          will_be_sent: appointmentsWithLembretes.filter(apt => apt.will_be_sent).length,
+          not_same_day: appointmentsWithLembretes.filter(apt => !apt.is_same_day).length
+        }
+      });
+      
+    } catch (error) {
+      console.error("Erro ao debug agendamentos lembretes:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Initialize WebSocket server
