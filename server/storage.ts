@@ -315,19 +315,16 @@ export class DatabaseStorage implements IStorage {
     // Calcular horário do lembrete (30 minutos antes)
     const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000);
     
-    // Se o horário do lembrete já passou, enviar imediatamente
-    if (lembreteTime <= now) {
-      console.log(`Lembrete para agendamento ${appointment.id} já deveria ter sido enviado - enviando agora`);
-      try {
-        await this.enviarLembreteN8N(appointment, client, service, staffMember);
-      } catch (error) {
-        console.error(`Erro ao enviar lembrete imediato para agendamento ${appointment.id}:`, error);
-      }
+    // Calcular delay em milissegundos
+    const delay = lembreteTime.getTime() - now.getTime();
+    
+    // Se o delay for negativo (lembrete já passou), não agendar
+    if (delay <= 0) {
+      console.log(`Lembrete para agendamento ${appointment.id} já deveria ter sido enviado - não agendando`);
       return;
     }
     
-    // Calcular delay em milissegundos
-    const delay = lembreteTime.getTime() - now.getTime();
+    console.log(`Agendando lembrete para ${appointment.id} em ${delay/1000/60} minutos (${lembreteTime.toLocaleString('pt-BR')})`);
     
     // Agendar o envio do lembrete
     setTimeout(async () => {

@@ -6546,8 +6546,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const now = new Date();
       
-      // Teste 1: Agendamento para hoje às 11:00 (agora são 10:00)
-      const appointmentToday = new Date("2025-08-23T11:00:00.000Z");
+      // Teste 1: Agendamento para hoje às 12:00 (agora são 11:15)
+      const appointmentToday = new Date("2025-08-23T12:00:00.000Z");
       const appointmentTodayDay = appointmentToday.getDate();
       const appointmentTodayMonth = appointmentToday.getMonth();
       const appointmentTodayYear = appointmentToday.getFullYear();
@@ -6598,7 +6598,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           should_send_now: shouldSendToday,
           will_schedule_lembrete: isSameDay && !shouldSendToday,
           will_send_immediately: isSameDay && shouldSendToday,
-          will_not_schedule: !isSameDay
+          will_not_schedule: !isSameDay,
+          time_until_lembrete_minutes: isSameDay ? Math.floor((lembreteTimeToday.getTime() - now.getTime()) / (1000 * 60)) : null
         },
         teste_2_agendamento_futuro: {
           appointment_date: appointmentFuture.toISOString(),
