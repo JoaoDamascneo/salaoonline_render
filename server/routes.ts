@@ -6736,6 +6736,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Resetar lembretes enviados (útil para testes)
+  app.post("/webhook/reset-lembretes/:establishmentId", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      const establishmentId = parseInt(req.params.establishmentId);
+      console.log(`🔄 Resetando lembretes para estabelecimento ${establishmentId}...`);
+      
+      await storage.resetLembretesEnviados(establishmentId);
+      
+      res.json({
+        success: true,
+        message: `Lembretes resetados para estabelecimento ${establishmentId}`,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error("Erro ao resetar lembretes:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Initialize WebSocket server

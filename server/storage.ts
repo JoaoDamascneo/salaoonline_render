@@ -343,6 +343,12 @@ export class DatabaseStorage implements IStorage {
 
   // Agendar lembrete automático para 30 minutos antes do agendamento
   private async scheduleLembrete(appointment: Appointment, client: Client | undefined, service: Service | undefined, staffMember: Staff | undefined) {
+    // Verificar se o lembrete já foi enviado
+    if (appointment.lembreteEnviado) {
+      console.log(`Lembrete para agendamento ${appointment.id} já foi enviado anteriormente - pulando`);
+      return;
+    }
+    
     const appointmentDate = new Date(appointment.appointmentDate);
     const now = new Date();
     
@@ -400,10 +406,52 @@ export class DatabaseStorage implements IStorage {
     console.log(`Lembrete agendado para agendamento ${appointment.id} em ${lembreteTime.toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'})}`);
   }
 
+  // Marcar agendamento como "lembrete enviado"
+  private async marcarLembreteEnviado(appointmentId: number): Promise<void> {
+    try {
+      await db
+        .update(appointments)
+        .set({ 
+          lembreteEnviado: true,
+          updatedAt: new Date()
+        })
+        .where(eq(appointments.id, appointmentId));
+      
+      console.log(`✅ Agendamento ${appointmentId} marcado como "lembrete enviado"`);
+    } catch (error) {
+      console.error(`❌ Erro ao marcar lembrete enviado para agendamento ${appointmentId}:`, error);
+    }
+  }
+
+  // Resetar lembretes enviados para um estabelecimento (útil para testes)
+  async resetLembretesEnviados(establishmentId: number): Promise<void> {
+    try {
+      const result = await db
+        .update(appointments)
+        .set({ 
+          lembreteEnviado: false,
+          updatedAt: new Date()
+        })
+        .where(eq(appointments.establishmentId, establishmentId))
+        .returning();
+      
+      console.log(`✅ Resetados ${result.length} lembretes para estabelecimento ${establishmentId}`);
+    } catch (error) {
+      console.error(`❌ Erro ao resetar lembretes para estabelecimento ${establishmentId}:`, error);
+      throw error;
+    }
+  }
+
   // Enviar lembrete para o N8N
   private async enviarLembreteN8N(appointment: Appointment, client: Client | undefined, service: Service | undefined, staffMember: Staff | undefined) {
     const establishment = await this.getEstablishment(appointment.establishmentId);
     const webhookData = await this.getN8nWebhookData(appointment.establishmentId);
+    
+    console.log(`🔍 Debug webhookData para establishment ${appointment.establishmentId}:`, {
+      webhookData: webhookData,
+      instanceId: webhookData?.instanceId,
+      establishmentName: webhookData?.establishmentName
+    });
     
     const lembreteData = {
       cliente_nome: client?.name || 'Cliente',
@@ -447,6 +495,9 @@ export class DatabaseStorage implements IStorage {
       
       if (response.ok) {
         console.log(`✅ Lembrete enviado - Cliente: ${client?.name}, Agendamento: ${appointment.id}`);
+        
+        // Marcar o agendamento como "lembrete enviado"
+        await this.marcarLembreteEnviado(appointment.id);
       } else {
         console.error(`❌ Erro ao enviar lembrete - Status: ${response.status}`);
       }
@@ -3341,51 +3392,6 @@ export class DatabaseStorage implements IStorage {
       .where(eq(establishments.id, establishmentId));
   }
 
-  // Reagendar lembretes para agendamentos do dia atual quando o servidor inicia
-  async reagendarLembretesDiaAtual() {
-    try {
-      console.log("🔄 Iniciando reagendamento de lembretes para o dia atual...");
-      
-      const now = new Date();
-      const currentDay = now.getDate();
-      const currentMonth = now.getMonth();
-      const currentYear = now.getFullYear();
-      
-      // Buscar todos os estabelecimentos
-      const establishments = await this.getAllEstablishments();
-      
-      for (const establishment of establishments) {
-        const appointments = await this.getAppointments(establishment.id);
-        
-        // Filtrar agendamentos do dia atual
-        const todayAppointments = appointments.filter(apt => {
-          const appointmentDate = new Date(apt.appointmentDate);
-          return appointmentDate.getDate() === currentDay &&
-                 appointmentDate.getMonth() === currentMonth &&
-                 appointmentDate.getFullYear() === currentYear &&
-                 (apt.status === 'confirmed' || apt.status === 'scheduled');
-        });
-        
-        console.log(`📅 Estabelecimento ${establishment.id}: ${todayAppointments.length} agendamentos para hoje`);
-        
-        for (const appointment of todayAppointments) {
-          const [client, service, staffMember] = await Promise.all([
-            this.getClient(appointment.clientId, appointment.establishmentId),
-            this.getService(appointment.serviceId, appointment.establishmentId),
-            this.getStaffMember(appointment.staffId, appointment.establishmentId)
-          ]);
-          
-          // Reagendar lembrete
-          await this.scheduleLembrete(appointment, client, service, staffMember);
-        }
-      }
-      
-      console.log("✅ Reagendamento de lembretes concluído!");
-      
-    } catch (error) {
-      console.error("❌ Erro ao reagendar lembretes:", error);
-    }
-  }
 }
 
 export const storage = new DatabaseStorage();
