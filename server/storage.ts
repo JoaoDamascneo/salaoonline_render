@@ -346,26 +346,31 @@ export class DatabaseStorage implements IStorage {
     const appointmentDate = new Date(appointment.appointmentDate);
     const now = new Date();
     
-    // Verificar se o dia e mês do agendamento são iguais ao dia atual
-    const appointmentDay = appointmentDate.getDate();
-    const appointmentMonth = appointmentDate.getMonth();
-    const appointmentYear = appointmentDate.getFullYear();
+    // Converter para timezone UTC-3 (Brazil) para comparação
+    const brazilOffset = -3 * 60 * 60 * 1000; // UTC-3 em milissegundos
+    const brazilTime = new Date(now.getTime() + brazilOffset);
+    const appointmentBrazilTime = new Date(appointmentDate.getTime() + brazilOffset);
     
-    const currentDay = now.getDate();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+    // Verificar se o dia e mês do agendamento são iguais ao dia atual (no timezone Brazil)
+    const appointmentDay = appointmentBrazilTime.getDate();
+    const appointmentMonth = appointmentBrazilTime.getMonth();
+    const appointmentYear = appointmentBrazilTime.getFullYear();
+    
+    const currentDay = brazilTime.getDate();
+    const currentMonth = brazilTime.getMonth();
+    const currentYear = brazilTime.getFullYear();
     
     // Se o dia, mês e ano não são iguais ao atual, não agendar lembrete
     if (appointmentDay !== currentDay || appointmentMonth !== currentMonth || appointmentYear !== currentYear) {
-      console.log(`Lembrete para agendamento ${appointment.id} não será agendado - data diferente do dia atual`);
+      console.log(`Lembrete para agendamento ${appointment.id} não será agendado - data diferente do dia atual (Brazil timezone)`);
       return;
     }
     
-    // Calcular horário do lembrete (30 minutos antes)
-    const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000);
+    // Calcular horário do lembrete (30 minutos antes) no timezone Brazil
+    const lembreteTime = new Date(appointmentBrazilTime.getTime() - 30 * 60 * 1000);
     
-    // Calcular delay em milissegundos
-    const delay = lembreteTime.getTime() - now.getTime();
+    // Calcular delay em milissegundos (comparando com Brazil time)
+    const delay = lembreteTime.getTime() - brazilTime.getTime();
     
     // Se o delay for negativo (lembrete já passou), não agendar
     if (delay <= 0) {
@@ -373,7 +378,7 @@ export class DatabaseStorage implements IStorage {
       return;
     }
     
-    console.log(`Agendando lembrete para ${appointment.id} em ${delay/1000/60} minutos (${lembreteTime.toLocaleString('pt-BR')})`);
+    console.log(`Agendando lembrete para ${appointment.id} em ${delay/1000/60} minutos (${lembreteTime.toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'})})`);
     
     // Agendar o envio do lembrete
     setTimeout(async () => {
@@ -384,7 +389,7 @@ export class DatabaseStorage implements IStorage {
       }
     }, delay);
     
-    console.log(`Lembrete agendado para agendamento ${appointment.id} em ${lembreteTime.toLocaleString('pt-BR')}`);
+    console.log(`Lembrete agendado para agendamento ${appointment.id} em ${lembreteTime.toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'})}`);
   }
 
   // Enviar lembrete para o N8N
