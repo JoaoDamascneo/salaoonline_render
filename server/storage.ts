@@ -297,22 +297,17 @@ export class DatabaseStorage implements IStorage {
     const appointmentDate = new Date(appointment.appointmentDate);
     const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000); // 30 minutos antes
     
-    // Usar timezone do Brasil para comparação (abordagem mais robusta)
+    // Comparação simples: se o lembrete já deveria ter sido enviado, não agendar
     const now = new Date();
     
-    // Converter para timezone do Brasil usando offset
-    const brazilOffset = -3 * 60 * 60 * 1000; // UTC-3 em milissegundos
-    const brazilTime = new Date(now.getTime() + brazilOffset);
-    const lembreteTimeBrazil = new Date(lembreteTime.getTime() + brazilOffset);
-    
     // Se o lembrete já deveria ter sido enviado, não agendar
-    if (lembreteTimeBrazil <= brazilTime) {
+    if (lembreteTime <= now) {
       console.log(`Lembrete para agendamento ${appointment.id} já deveria ter sido enviado`);
       return;
     }
     
-    // Calcular delay em milissegundos usando timezone do Brasil
-    const delay = lembreteTimeBrazil.getTime() - brazilTime.getTime();
+    // Calcular delay em milissegundos
+    const delay = lembreteTime.getTime() - now.getTime();
     
     // Agendar o envio do lembrete
     setTimeout(async () => {
