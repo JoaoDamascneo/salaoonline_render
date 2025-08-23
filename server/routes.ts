@@ -2648,7 +2648,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           return checkDate >= vacationStart && checkDate <= vacationEnd;
         });
-        
+
         const typeLabels = {
           vacation: 'férias',
           sick_leave: 'atestado médico',
@@ -6702,6 +6702,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
     } catch (error) {
       console.error("Erro ao debug agendamentos lembretes:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
+  // Endpoint para reagendar lembretes do dia atual
+  app.post("/webhook/reagendar-lembretes-hoje", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      console.log("🔄 Iniciando reagendamento manual de lembretes...");
+      
+      await storage.reagendarLembretesDiaAtual();
+      
+      res.json({
+        success: true,
+        message: "Reagendamento de lembretes iniciado com sucesso",
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error("Erro ao reagendar lembretes:", error);
       res.status(500).json({
         success: false,
         error: "Erro interno do servidor",

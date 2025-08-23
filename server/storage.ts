@@ -274,6 +274,9 @@ export interface IStorage {
   checkClientEligibleForReward(clientId: number, programId: number, establishmentId: number): Promise<boolean>;
   getClientsWithAvailableRewards(establishmentId: number): Promise<any[]>;
   getClientsWithRewards(establishmentId: number): Promise<any[]>;
+
+  // Reagendar lembretes para agendamentos do dia atual quando o servidor inicia
+  reagendarLembretesDiaAtual(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -290,6 +293,52 @@ export class DatabaseStorage implements IStorage {
 
   async getAllEstablishments(): Promise<Establishment[]> {
     return await db.select().from(establishments).orderBy(establishments.name);
+  }
+
+  // Reagendar lembretes para agendamentos do dia atual quando o servidor inicia
+  async reagendarLembretesDiaAtual() {
+    try {
+      console.log("🔄 Iniciando reagendamento de lembretes para o dia atual...");
+      
+      const now = new Date();
+      const currentDay = now.getDate();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      
+      // Buscar todos os estabelecimentos
+      const establishments = await this.getAllEstablishments();
+      
+      for (const establishment of establishments) {
+        const appointments = await this.getAppointments(establishment.id);
+        
+        // Filtrar agendamentos do dia atual
+        const todayAppointments = appointments.filter(apt => {
+          const appointmentDate = new Date(apt.appointmentDate);
+          return appointmentDate.getDate() === currentDay &&
+                 appointmentDate.getMonth() === currentMonth &&
+                 appointmentDate.getFullYear() === currentYear &&
+                 (apt.status === 'confirmed' || apt.status === 'scheduled');
+        });
+        
+        console.log(`📅 Estabelecimento ${establishment.id}: ${todayAppointments.length} agendamentos para hoje`);
+        
+        for (const appointment of todayAppointments) {
+          const [client, service, staffMember] = await Promise.all([
+            this.getClient(appointment.clientId, appointment.establishmentId),
+            this.getService(appointment.serviceId, appointment.establishmentId),
+            this.getStaffMember(appointment.staffId, appointment.establishmentId)
+          ]);
+          
+          // Reagendar lembrete
+          await this.scheduleLembrete(appointment, client, service, staffMember);
+        }
+      }
+      
+      console.log("✅ Reagendamento de lembretes concluído!");
+      
+    } catch (error) {
+      console.error("❌ Erro ao reagendar lembretes:", error);
+    }
   }
 
   // Agendar lembrete automático para 30 minutos antes do agendamento
@@ -3277,6 +3326,52 @@ export class DatabaseStorage implements IStorage {
       .update(establishments)
       .set({ timezone })
       .where(eq(establishments.id, establishmentId));
+  }
+
+  // Reagendar lembretes para agendamentos do dia atual quando o servidor inicia
+  async reagendarLembretesDiaAtual() {
+    try {
+      console.log("🔄 Iniciando reagendamento de lembretes para o dia atual...");
+      
+      const now = new Date();
+      const currentDay = now.getDate();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      
+      // Buscar todos os estabelecimentos
+      const establishments = await this.getAllEstablishments();
+      
+      for (const establishment of establishments) {
+        const appointments = await this.getAppointments(establishment.id);
+        
+        // Filtrar agendamentos do dia atual
+        const todayAppointments = appointments.filter(apt => {
+          const appointmentDate = new Date(apt.appointmentDate);
+          return appointmentDate.getDate() === currentDay &&
+                 appointmentDate.getMonth() === currentMonth &&
+                 appointmentDate.getFullYear() === currentYear &&
+                 (apt.status === 'confirmed' || apt.status === 'scheduled');
+        });
+        
+        console.log(`📅 Estabelecimento ${establishment.id}: ${todayAppointments.length} agendamentos para hoje`);
+        
+        for (const appointment of todayAppointments) {
+          const [client, service, staffMember] = await Promise.all([
+            this.getClient(appointment.clientId, appointment.establishmentId),
+            this.getService(appointment.serviceId, appointment.establishmentId),
+            this.getStaffMember(appointment.staffId, appointment.establishmentId)
+          ]);
+          
+          // Reagendar lembrete
+          await this.scheduleLembrete(appointment, client, service, staffMember);
+        }
+      }
+      
+      console.log("✅ Reagendamento de lembretes concluído!");
+      
+    } catch (error) {
+      console.error("❌ Erro ao reagendar lembretes:", error);
+    }
   }
 }
 
