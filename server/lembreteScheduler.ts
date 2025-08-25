@@ -127,19 +127,21 @@ class LembreteScheduler {
       // Se já está agendado, cancelar o anterior
       this.cancelLembrete(appointmentId);
       
-      // O appointmentDate já está salvo em UTC
+      // O appointmentDate está salvo como horário local de São Paulo
       const dataInicio = new Date(appointment.dataInicio || appointment.appointmentDate);
       
-      // Calcular lembrete em UTC (30 minutos antes)
-      const lembreteTimeUTC = new Date(dataInicio.getTime() - 30 * 60 * 1000);
+      // Calcular lembrete em São Paulo (30 minutos antes)
+      const lembreteTime = new Date(dataInicio.getTime() - 30 * 60 * 1000);
       
-      // Horário atual em UTC
+      // Horário atual em São Paulo
       const now = new Date();
+      const brazilOffset = -3 * 60 * 60 * 1000; // UTC-3 em milissegundos
+      const nowBrazil = new Date(now.getTime() + brazilOffset);
       
 
       
-      // Calcular delay em milissegundos (comparação em UTC)
-      const delayMs = lembreteTimeUTC.getTime() - now.getTime();
+      // Calcular delay em milissegundos (comparação em horário de São Paulo)
+      const delayMs = lembreteTime.getTime() - nowBrazil.getTime();
       
 
       
@@ -168,10 +170,10 @@ class LembreteScheduler {
       this.scheduledLembretes.set(appointmentId, {
         appointmentId,
         timeoutId,
-        scheduledTime: lembreteTimeUTC
+        scheduledTime: lembreteTime
       });
       
-      console.log(`⏰ Lembrete agendado para agendamento ${appointmentId} em ${Math.floor(delayMs / (1000 * 60))} minutos (${lembreteTimeUTC.toLocaleString('pt-BR')})`);
+      console.log(`⏰ Lembrete agendado para agendamento ${appointmentId} em ${Math.floor(delayMs / (1000 * 60))} minutos (${lembreteTime.toLocaleString('pt-BR')})`);
       
     } catch (error) {
       console.error(`❌ Erro ao agendar lembrete para agendamento ${appointment.id}:`, error);
