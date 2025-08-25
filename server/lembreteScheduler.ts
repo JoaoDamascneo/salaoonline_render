@@ -87,7 +87,15 @@ class LembreteScheduler {
         return;
       }
       
-      // REMOVIDO: Restrição de 24 horas - agora agenda para qualquer data futura
+      // Verificar se o delay excede o limite do setTimeout (2.147.483.647 ms ≈ 24.8 dias)
+      const maxTimeoutMs = 2147483647;
+      
+      if (delayMs > maxTimeoutMs) {
+        console.log(`⏰ Lembrete para agendamento ${appointmentId} muito distante (${Math.floor(delayMs / (1000 * 60 * 60 * 24))} dias) - não agendando agora`);
+        console.log(`🔍 DEBUG: Saindo da função scheduleLembrete por delayMs > maxTimeout`);
+        return;
+      }
+      
       console.log(`🔍 DEBUG: Passou pelas verificações, agendando lembrete...`);
       
       // Agendar o lembrete
