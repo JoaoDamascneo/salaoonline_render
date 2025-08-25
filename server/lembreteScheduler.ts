@@ -9,6 +9,7 @@ interface ScheduledLembrete {
 class LembreteScheduler {
   private scheduledLembretes: Map<number, ScheduledLembrete> = new Map();
   private isInitialized = false;
+  private nextReavaliacaoTimeout: NodeJS.Timeout | null = null;
 
   // Inicializar o scheduler
   async initialize() {
@@ -24,11 +25,62 @@ class LembreteScheduler {
         await this.scheduleLembretesForEstablishment(establishment.id);
       }
       
+      // Agendar primeira reavaliação para agendamentos futuros
+      this.agendarProximaReavaliacao();
+      
       this.isInitialized = true;
       console.log('✅ LembreteScheduler inicializado com sucesso');
       
     } catch (error) {
       console.error('❌ Erro ao inicializar LembreteScheduler:', error);
+    }
+  }
+
+  // Agendar próxima reavaliação sem polling
+  private agendarProximaReavaliacao() {
+    // Cancelar reavaliação anterior se existir
+    if (this.nextReavaliacaoTimeout) {
+      clearTimeout(this.nextReavaliacaoTimeout);
+    }
+    
+    // Reavaliar em 1 hora
+    this.nextReavaliacaoTimeout = setTimeout(async () => {
+      try {
+        console.log('🔄 Reavaliando agendamentos futuros (sem polling)...');
+        await this.reavaliarAgendamentosFuturos();
+        
+        // Agendar próxima reavaliação
+        this.agendarProximaReavaliacao();
+      } catch (error) {
+        console.error('❌ Erro na reavaliação:', error);
+        // Tentar novamente em 1 hora mesmo com erro
+        this.agendarProximaReavaliacao();
+      }
+    }, 3600000); // 1 hora
+    
+    console.log('⏰ Próxima reavaliação agendada para 1 hora (sem polling)');
+  }
+
+  // Reavaliar agendamentos futuros
+  private async reavaliarAgendamentosFuturos() {
+    try {
+      const establishments = await storage.getAllEstablishments();
+      
+      for (const establishment of establishments) {
+        const appointments = await storage.getNextUpcomingAppointments(establishment.id);
+        
+        for (const appointment of appointments) {
+          // Verificar se já está agendado
+          if (!this.scheduledLembretes.has(appointment.id)) {
+            // Tentar agendar novamente
+            await this.scheduleLembrete(appointment);
+          }
+        }
+      }
+      
+      console.log('✅ Reavaliação de agendamentos futuros concluída');
+    } catch (error) {
+      console.error('❌ Erro ao reavaliar agendamentos futuros:', error);
     }
   }
 
@@ -196,11 +248,18 @@ class LembreteScheduler {
 
   // Cancelar todos os lembretes
   cancelAllLembretes() {
-    for (const [appointmentId, scheduled] of this.scheduledLembretes) {
+    this.scheduledLembretes.forEach((scheduled) => {
       clearTimeout(scheduled.timeoutId);
-    }
+    });
     this.scheduledLembretes.clear();
-    console.log('❌ Todos os lembretes cancelados');
+    
+    // Parar reavaliação
+    if (this.nextReavaliacaoTimeout) {
+      clearTimeout(this.nextReavaliacaoTimeout);
+      this.nextReavaliacaoTimeout = null;
+    }
+    
+    console.log('❌ Todos os lembretes cancelados e reavaliação parada');
   }
 
   // Obter status dos lembretes agendados
