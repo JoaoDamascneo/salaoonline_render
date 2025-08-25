@@ -6619,24 +6619,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       
       const appointmentsWithLembretes = activeAppointments.map(appointment => {
-        const appointmentDate = new Date(appointment.appointmentDate);
+        const dataInicio = new Date(appointment.dataInicio || appointment.appointmentDate);
         
-        // LÓGICA SIMPLES: appointment_date - 30 minutos
-        const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000);
+        // LÓGICA SIMPLES: dataInicio - 30 minutos
+        const lembreteTime = new Date(dataInicio.getTime() - 30 * 60 * 1000);
         
-        // Calcular delay em minutos (considerando que appointmentDate está salvo como horário local)
-        // O appointmentDate está salvo como horário de São Paulo, mas interpretado como UTC
-        // Então precisamos converter para UTC-3 para comparar corretamente
+        // Calcular delay em minutos (dataInicio já está salvo como horário local)
         const brazilOffset = -3 * 60 * 60 * 1000; // UTC-3 em milissegundos
-        
-        // Converter appointmentDate de "UTC" para horário real de São Paulo
-        const realBrazilTime = new Date(appointmentDate.getTime() + brazilOffset);
-        const realBrazilLembreteTime = new Date(realBrazilTime.getTime() - 30 * 60 * 1000);
         
         // Horário atual em São Paulo
         const brazilNow = new Date(now.getTime() + brazilOffset);
         
-        const delayMs = realBrazilLembreteTime.getTime() - brazilNow.getTime();
+        // Lembrete em São Paulo (dataInicio já é horário local)
+        const brazilLembreteTime = new Date(dataInicio.getTime() - 30 * 60 * 1000);
+        
+        const delayMs = brazilLembreteTime.getTime() - brazilNow.getTime();
         const delayMinutes = Math.floor(delayMs / (1000 * 60));
         
         // Determinar status baseado apenas no delay
@@ -6653,8 +6650,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: appointment.id,
           client_name: appointment.clientName,
           service_name: appointment.serviceName,
-          appointment_date: appointmentDate.toISOString(),
-          appointment_date_brazil: appointmentDate.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          appointment_date: dataInicio.toISOString(),
+          appointment_date_brazil: dataInicio.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
           status: appointment.status,
           lembrete_time: lembreteTime.toISOString(),
           lembrete_time_brazil: lembreteTime.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
