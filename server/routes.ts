@@ -2631,7 +2631,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Set times to start of day for accurate comparison
         vacationStart.setHours(0, 0, 0, 0);
         vacationEnd.setHours(23, 59, 59, 999);
-        checkDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
+        checkDate.setHours(12, 0, 0, 0);
         
         return checkDate >= vacationStart && checkDate <= vacationEnd;
       });
@@ -6624,7 +6624,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // LÓGICA SIMPLES: appointment_date - 30 minutos
         const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000);
         
-        // Calcular delay em minutos
+        // Calcular delay em minutos (sem offset UTC-3, pois servidor já está em UTC)
         const delayMs = lembreteTime.getTime() - now.getTime();
         const delayMinutes = Math.floor(delayMs / (1000 * 60));
         
