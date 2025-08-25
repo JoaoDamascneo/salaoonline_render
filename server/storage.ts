@@ -300,178 +300,18 @@ export class DatabaseStorage implements IStorage {
     try {
       console.log("🔄 Iniciando reagendamento de lembretes para o dia atual...");
       
-      const now = new Date();
-      const currentDay = now.getDate();
-      const currentMonth = now.getMonth();
-      const currentYear = now.getFullYear();
+      // Usar o novo scheduler em vez da implementação antiga
+      const { lembreteScheduler } = await import("./lembreteScheduler");
+      await lembreteScheduler.reloadAllLembretes();
       
-      // Buscar todos os estabelecimentos
-      const establishments = await this.getAllEstablishments();
-      
-      for (const establishment of establishments) {
-        const appointments = await this.getAppointments(establishment.id);
-        
-        // Filtrar agendamentos do dia atual que ainda não passaram do horário do lembrete
-        const todayAppointments = appointments.filter(apt => {
-          const appointmentDate = new Date(apt.appointmentDate);
-          const appointmentDay = appointmentDate.getDate();
-          const appointmentMonth = appointmentDate.getMonth();
-          const appointmentYear = appointmentDate.getFullYear();
-          
-          // Verificar se é o dia atual
-          const isSameDay = appointmentDay === currentDay && 
-                           appointmentMonth === currentMonth && 
-                           appointmentYear === currentYear;
-          
-          if (!isSameDay || !(apt.status === 'confirmed' || apt.status === 'scheduled')) {
-            return false;
-          }
-          
-          // Verificar se o lembrete ainda não passou (30 minutos antes)
-          const brazilOffset = -3 * 60 * 60 * 1000; // UTC-3
-          const appointmentBrazilTime = new Date(appointmentDate.getTime() + brazilOffset);
-          const lembreteTime = new Date(appointmentBrazilTime.getTime() - 30 * 60 * 1000);
-          const lembreteTimeUTC = new Date(lembreteTime.getTime() - brazilOffset);
-          
-          // Só agendar se o lembrete ainda não passou
-          return lembreteTimeUTC.getTime() > now.getTime();
-        });
-        
-        console.log(`📅 Estabelecimento ${establishment.id}: ${todayAppointments.length} agendamentos para reagendar lembretes`);
-        
-        for (const appointment of todayAppointments) {
-          const [client, service, staffMember] = await Promise.all([
-            this.getClient(appointment.clientId, appointment.establishmentId),
-            this.getService(appointment.serviceId, appointment.establishmentId),
-            this.getStaffMember(appointment.staffId, appointment.establishmentId)
-          ]);
-          
-          // Agendar lembrete apenas para agendamentos que ainda não passaram do horário
-          await this.scheduleLembrete(appointment, client, service, staffMember);
-        }
-      }
-      
-      console.log("✅ Reagendamento de lembretes concluído!");
+      console.log("✅ Reagendamento de lembretes concluído usando novo scheduler!");
       
     } catch (error) {
       console.error("❌ Erro ao reagendar lembretes:", error);
     }
   }
 
-  // Agendar lembrete automático para 30 minutos antes do agendamento
-  private async scheduleLembrete(appointment: Appointment, client: Client | undefined, service: Service | undefined, staffMember: Staff | undefined) {
-    const appointmentDate = new Date(appointment.appointmentDate);
-    const now = new Date();
-    
-    // Converter para timezone UTC-3 (Brazil) para comparação
-    const brazilOffset = -3 * 60 * 60 * 1000; // UTC-3 em milissegundos
-    const brazilTime = new Date(now.getTime() + brazilOffset);
-    const appointmentBrazilTime = new Date(appointmentDate.getTime() + brazilOffset);
-    
-    // Verificar se o dia e mês do agendamento são iguais ao dia atual (no timezone Brazil)
-    const appointmentDay = appointmentBrazilTime.getDate();
-    const appointmentMonth = appointmentBrazilTime.getMonth();
-    const appointmentYear = appointmentBrazilTime.getFullYear();
-    
-    const currentDay = brazilTime.getDate();
-    const currentMonth = brazilTime.getMonth();
-    const currentYear = brazilTime.getFullYear();
-    
-    // Se o dia, mês e ano não são iguais ao atual, não agendar lembrete
-    if (appointmentDay !== currentDay || appointmentMonth !== currentMonth || appointmentYear !== currentYear) {
-      console.log(`Lembrete para agendamento ${appointment.id} não será agendado - data diferente do dia atual (Brazil timezone)`);
-      return;
-    }
-    
-    // Calcular horário do lembrete (30 minutos antes) diretamente do appointment_date
-    const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000);
-    
-    // Calcular delay em milissegundos (comparando com UTC)
-    const delay = lembreteTime.getTime() - now.getTime();
-    
-    // Se o delay for negativo (lembrete já passou), não enviar
-    if (delay <= 0) {
-      console.log(`Lembrete para agendamento ${appointment.id} já passou do horário - não enviando`);
-      return;
-    }
-    
-    console.log(`Agendando lembrete para ${appointment.id} em ${delay/1000/60} minutos (${lembreteTime.toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'})})`);
-    
-    // Agendar o envio do lembrete
-    setTimeout(async () => {
-      try {
-        await this.enviarLembreteN8N(appointment, client, service, staffMember);
-      } catch (error) {
-        console.error(`Erro ao enviar lembrete para agendamento ${appointment.id}:`, error);
-      }
-    }, delay);
-    
-    console.log(`Lembrete agendado para agendamento ${appointment.id} em ${lembreteTime.toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'})}`);
-  }
 
-
-
-  // Enviar lembrete para o N8N
-  private async enviarLembreteN8N(appointment: Appointment, client: Client | undefined, service: Service | undefined, staffMember: Staff | undefined) {
-    const establishment = await this.getEstablishment(appointment.establishmentId);
-    const webhookData = await this.getN8nWebhookData(appointment.establishmentId);
-    
-    console.log(`🔍 Debug webhookData para establishment ${appointment.establishmentId}:`, {
-      webhookData: webhookData,
-      instanceId: webhookData?.instanceId,
-      establishmentName: webhookData?.establishmentName
-    });
-    
-    const lembreteData = {
-      cliente_nome: client?.name || 'Cliente',
-      cliente_id: appointment.clientId,
-      cliente_telefone: client?.phone || '',
-      cliente_email: client?.email || '',
-      estabelecimento_nome: establishment?.name || 'Estabelecimento',
-      estabelecimento_id: appointment.establishmentId,
-      instance_id: webhookData?.instanceId || '',
-      servico_nome: service?.name || 'Serviço',
-      servico_preco: service?.price || '0.00',
-      servico_duracao: appointment.duration,
-      profissional_nome: staffMember?.name || 'Profissional',
-      agendamento_id: appointment.id,
-      agendamento_data: new Date(appointment.appointmentDate).toLocaleDateString('pt-BR'),
-      agendamento_hora: new Date(appointment.appointmentDate).toLocaleTimeString('pt-BR', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      }),
-      agendamento_data_completa: appointment.appointmentDate,
-      agendamento_status: appointment.status,
-      agendamento_observacoes: appointment.notes || ''
-    };
-
-    const n8nWebhookUrl = 'https://n8n-n8n-start.ayp7v6.easypanel.host/webhook/lembrete';
-    
-    try {
-      const response = await fetch(n8nWebhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          success: true,
-          total_lembretes: 1,
-          lembretes: [lembreteData],
-          timestamp: new Date().toISOString(),
-          message: `Lembrete automático enviado para ${client?.name || 'Cliente'}`
-        })
-      });
-      
-      if (response.ok) {
-        console.log(`✅ Lembrete enviado - Cliente: ${client?.name}, Agendamento: ${appointment.id}`);
-      } else {
-        console.error(`❌ Erro ao enviar lembrete - Status: ${response.status}`);
-      }
-      
-    } catch (error) {
-      console.error("❌ Erro ao enviar lembrete:", error);
-    }
-  }
 
   async createEstablishment(insertEstablishment: InsertEstablishment): Promise<Establishment> {
     const [establishment] = await db
