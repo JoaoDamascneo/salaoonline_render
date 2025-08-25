@@ -6624,12 +6624,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // LÓGICA SIMPLES: appointment_date - 30 minutos
         const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000);
         
-        // Calcular delay em minutos (convertendo para horário de São Paulo)
-        const brazilOffset = -3 * 60 * 60 * 1000; // UTC-3 em milissegundos
-        const brazilNow = new Date(now.getTime() + brazilOffset);
-        const brazilLembreteTime = new Date(lembreteTime.getTime() + brazilOffset);
-        
-        const delayMs = brazilLembreteTime.getTime() - brazilNow.getTime();
+        // Calcular delay em minutos (comparando diretamente em UTC)
+        const delayMs = lembreteTime.getTime() - now.getTime();
         const delayMinutes = Math.floor(delayMs / (1000 * 60));
         
         // Determinar status baseado apenas no delay
