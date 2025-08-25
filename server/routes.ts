@@ -6767,6 +6767,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoints para gerenciar o scheduler de lembretes
+  app.get('/webhook/lembrete-scheduler/status', async (req, res) => {
+    try {
+      const { lembreteScheduler } = await import("./lembreteScheduler");
+      const status = lembreteScheduler.getStatus();
+      res.json({
+        success: true,
+        scheduler: status,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('❌ Erro ao obter status do scheduler:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor'
+      });
+    }
+  });
+
+  app.post('/webhook/lembrete-scheduler/reload', async (req, res) => {
+    try {
+      const { lembreteScheduler } = await import("./lembreteScheduler");
+      await lembreteScheduler.reloadAllLembretes();
+      res.json({
+        success: true,
+        message: 'Scheduler recarregado com sucesso',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('❌ Erro ao recarregar scheduler:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Initialize WebSocket server
