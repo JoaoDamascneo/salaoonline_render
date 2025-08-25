@@ -6804,6 +6804,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint para testar agendamento manual de lembrete
+  app.post('/webhook/lembrete-scheduler/test-schedule/:appointmentId', async (req, res) => {
+    try {
+      const appointmentId = parseInt(req.params.appointmentId);
+      const { lembreteScheduler } = await import("./lembreteScheduler");
+      
+      // Buscar o agendamento
+      const appointment = await storage.getAppointment(appointmentId);
+      if (!appointment) {
+        return res.status(404).json({
+          success: false,
+          error: 'Agendamento não encontrado'
+        });
+      }
+      
+      // Buscar dados completos
+      const [client, service, staffMember] = await Promise.all([
+        storage.getClient(appointment.clientId, appointment.establishmentId),
+        storage.getService(appointment.serviceId, appointment.establishmentId),
+        storage.getStaffMember(appointment.staffId, appointment.establishmentId)
+      ]);
+      
+      // Preparar dados do agendamento
+      const appointmentData = {
+        id: appointment.id,
+        clientId: appointment.clientId,
+        clientName: client?.name || 'Cliente',
+        clientPhone: client?.phone || '',
+        clientEmail: client?.email || '',
+        establishmentId: appointment.establishmentId,
+        establishmentName: client?.name || 'Estabelecimento',
+        serviceId: appointment.serviceId,
+        serviceName: service?.name || 'Serviço',
+        servicePrice: service?.price || '0.00',
+        staffId: appointment.staffId,
+        staffName: staffMember?.name || 'Profissional',
+        appointmentDate: appointment.appointmentDate,
+        dataInicio: appointment.appointmentDate,
+        duration: appointment.duration,
+        status: appointment.status,
+        notes: appointment.notes || ''
+      };
+      
+      // Agendar o lembrete
+      await lembreteScheduler.scheduleLembrete(appointmentData);
+      
+      res.json({
+        success: true,
+        message: `Lembrete agendado manualmente para agendamento ${appointmentId}`,
+        appointment: appointmentData,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro ao agendar lembrete manual:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Initialize WebSocket server
