@@ -6865,52 +6865,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Endpoint de debug simples para testar o scheduler
-  app.post('/webhook/lembrete-scheduler/debug-test', async (req, res) => {
-    try {
-      const { lembreteScheduler } = await import("./lembreteScheduler");
-      
-      // Teste simples com dados mock
-      const testAppointment = {
-        id: 999,
-        clientId: 1,
-        clientName: 'Teste',
-        clientPhone: '123456789',
-        clientEmail: 'teste@teste.com',
-        establishmentId: 2,
-        establishmentName: 'Teste',
-        serviceId: 1,
-        serviceName: 'Teste',
-        servicePrice: '10.00',
-        staffId: 1,
-        staffName: 'Teste',
-        appointmentDate: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutos no futuro
-        dataInicio: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
-        duration: 30,
-        status: 'scheduled',
-        notes: 'Teste'
-      };
-      
-      console.log('🧪 DEBUG: Testando scheduler com dados mock...');
-      await lembreteScheduler.scheduleLembrete(testAppointment);
-      
-      const status = lembreteScheduler.getStatus();
-      
-      res.json({
-        success: true,
-        message: 'Teste do scheduler executado',
-        status: status,
-        timestamp: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error('❌ Erro no teste do scheduler:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Erro interno do servidor'
-      });
-    }
-  });
+
 
   const httpServer = createServer(app);
   

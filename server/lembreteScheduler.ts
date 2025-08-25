@@ -122,9 +122,7 @@ class LembreteScheduler {
     try {
       const appointmentId = appointment.id;
       
-      console.log(`🔍 DEBUG: Tentando agendar lembrete para agendamento ${appointmentId}`);
-      console.log(`🔍 DEBUG: appointment.dataInicio = ${appointment.dataInicio}`);
-      console.log(`🔍 DEBUG: appointment.appointmentDate = ${appointment.appointmentDate}`);
+
       
       // Se já está agendado, cancelar o anterior
       this.cancelLembrete(appointmentId);
@@ -141,20 +139,16 @@ class LembreteScheduler {
       const lembreteTimeUTC = new Date(dataInicioUTC.getTime() - 30 * 60 * 1000);
       const now = new Date();
       
-      console.log(`🔍 DEBUG: dataInicio (local) = ${dataInicio.toISOString()}`);
-      console.log(`🔍 DEBUG: dataInicioUTC = ${dataInicioUTC.toISOString()}`);
-      console.log(`🔍 DEBUG: lembreteTimeUTC = ${lembreteTimeUTC.toISOString()}`);
-      console.log(`🔍 DEBUG: now = ${now.toISOString()}`);
+
       
       // Calcular delay em milissegundos (comparação em UTC)
       const delayMs = lembreteTimeUTC.getTime() - now.getTime();
       
-      console.log(`🔍 DEBUG: delayMs = ${delayMs} ms (${Math.floor(delayMs / (1000 * 60))} minutos)`);
+
       
       // Se o lembrete já passou, não agendar
       if (delayMs <= 0) {
         console.log(`⏰ Lembrete para agendamento ${appointmentId} já passou - não agendando`);
-        console.log(`🔍 DEBUG: Saindo da função scheduleLembrete por delayMs <= 0`);
         return;
       }
       
@@ -163,15 +157,13 @@ class LembreteScheduler {
       
       if (delayMs > maxTimeoutMs) {
         console.log(`⏰ Lembrete para agendamento ${appointmentId} muito distante (${Math.floor(delayMs / (1000 * 60 * 60 * 24))} dias) - não agendando agora`);
-        console.log(`🔍 DEBUG: Saindo da função scheduleLembrete por delayMs > maxTimeout`);
         return;
       }
       
-      console.log(`🔍 DEBUG: Passou pelas verificações, agendando lembrete...`);
+
       
       // Agendar o lembrete
       const timeoutId = setTimeout(async () => {
-        console.log(`🔍 DEBUG: setTimeout executado para agendamento ${appointmentId}`);
         await this.executeLembrete(appointment);
       }, delayMs);
       
@@ -183,8 +175,6 @@ class LembreteScheduler {
       });
       
       console.log(`⏰ Lembrete agendado para agendamento ${appointmentId} em ${Math.floor(delayMs / (1000 * 60))} minutos (${lembreteTimeUTC.toLocaleString('pt-BR')})`);
-      console.log(`🔍 DEBUG: Total de lembretes agendados: ${this.scheduledLembretes.size}`);
-      console.log(`🔍 DEBUG: Finalizando função scheduleLembrete com sucesso`);
       
     } catch (error) {
       console.error(`❌ Erro ao agendar lembrete para agendamento ${appointment.id}:`, error);

@@ -61,20 +61,16 @@ export function useWebSocket() {
               break;
               
             case 'financial_change':
-              console.log('🔔 DEBUG: Recebida notificação financial_change:', data);
               // Optimized invalidation - only essential queries
               queryClient.invalidateQueries({ queryKey: ['/api/finances/stats'] });
               queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
-              console.log('🔔 DEBUG: Queries financeiras invalidadas');
               break;
               
             case 'dashboard_change':
-              console.log('🔔 DEBUG: Recebida notificação dashboard_change:', data);
               // Invalidate dashboard-specific queries
               queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
               queryClient.invalidateQueries({ queryKey: ['/api/dashboard/recent-appointments'] });
               queryClient.invalidateQueries({ queryKey: ['/api/finances/stats'] });
-              console.log('🔔 DEBUG: Queries dashboard invalidadas');
               break;
               
             case 'inventory_change':
@@ -101,13 +97,11 @@ export function useWebSocket() {
               break;
               
             case 'staff_dashboard_change':
-              console.log('🔔 DEBUG: Recebida notificação staff_dashboard_change:', data);
               // Invalidate staff-specific dashboard data
               queryClient.invalidateQueries({ queryKey: ['/api/staff/dashboard-data'] });
               queryClient.invalidateQueries({ queryKey: ['/api/staff/next-appointment'] });
               queryClient.invalidateQueries({ queryKey: ['/api/dashboard/recent-appointments'] });
               queryClient.invalidateQueries({ queryKey: ['/api/appointments'] });
-              console.log('🔔 DEBUG: Queries staff dashboard invalidadas');
               break;
               
             case 'staff_appointment_notification':
