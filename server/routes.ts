@@ -6742,4 +6742,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         success: true,
-        message: "Reagendamento de lembretes
+        message: "Reagendamento de lembretes iniciado com sucesso",
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error("Erro ao reagendar lembretes:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
+  const httpServer = createServer(app);
+  
+  // Initialize WebSocket server
+  const { initializeWebSocket } = await import("./websocket");
+  initializeWebSocket(httpServer);
+  
+  return httpServer;
+}
