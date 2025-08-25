@@ -6603,6 +6603,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint com lógica SIMPLIFICADA - apenas appointment_date - 30 minutos
+  app.get("/webhook/debug-logica-simples/:establishmentId", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      const establishmentId = parseInt(req.params.establishmentId);
+      const appointments = await storage.getAppointments(establishmentId);
+      const now = new Date();
+      
+      // Filtrar apenas agendamentos confirmados/scheduled
+      const activeAppointments = appointments.filter(apt => 
+        apt.status === 'confirmed' || apt.status === 'scheduled'
+      );
+      
+      const appointmentsWithLembretes = activeAppointments.map(appointment => {
+        const appointmentDate = new Date(appointment.appointmentDate);
+        
+        // LÓGICA SIMPLES: appointment_date - 30 minutos
+        const lembreteTime = new Date(appointmentDate.getTime() - 30 * 60 * 1000);
+        
+        // Calcular delay em minutos
+        const delayMs = lembreteTime.getTime() - now.getTime();
+        const delayMinutes = Math.floor(delayMs / (1000 * 60));
+        
+        // Determinar status baseado apenas no delay
+        let status;
+        if (delayMinutes <= 0) {
+          status = "DEVERIA TER SIDO ENVIADO";
+        } else if (delayMinutes <= 30) {
+          status = "SERÁ ENVIADO EM BREVE";
+        } else {
+          status = "AGENDADO PARA O FUTURO";
+        }
+        
+        return {
+          id: appointment.id,
+          client_name: appointment.clientName,
+          service_name: appointment.serviceName,
+          appointment_date: appointmentDate.toISOString(),
+          appointment_date_brazil: appointmentDate.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          status: appointment.status,
+          lembrete_time: lembreteTime.toISOString(),
+          lembrete_time_brazil: lembreteTime.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          delay_minutes: delayMinutes,
+          lembrete_status: status,
+          should_send_now: delayMinutes <= 0 && delayMinutes > -60 // Enviar se passou até 1 hora
+        };
+      });
+      
+      // Filtrar apenas os que devem ser enviados agora
+      const lembretesParaEnviar = appointmentsWithLembretes.filter(apt => apt.should_send_now);
+      
+      res.json({
+        success: true,
+        debug_info: {
+          current_time: now.toISOString(),
+          current_time_brazil: now.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          establishment_id: establishmentId,
+          total_appointments: appointments.length,
+          active_appointments: activeAppointments.length
+        },
+        appointments_with_lembretes: appointmentsWithLembretes,
+        lembretes_para_enviar_agora: lembretesParaEnviar,
+        summary: {
+          total: appointmentsWithLembretes.length,
+          para_enviar_agora: lembretesParaEnviar.length,
+          ja_passou: appointmentsWithLembretes.filter(apt => apt.delay_minutes <= 0).length,
+          futuro: appointmentsWithLembretes.filter(apt => apt.delay_minutes > 30).length
+        }
+      });
+      
+    } catch (error) {
+      console.error("Erro ao debug lógica simples:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
   // Endpoint para reagendar lembretes do dia atual
   app.post("/webhook/reagendar-lembretes-hoje", async (req, res) => {
     try {
