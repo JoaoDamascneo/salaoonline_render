@@ -6811,7 +6811,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { lembreteScheduler } = await import("./lembreteScheduler");
       
       // Buscar o agendamento
-      const appointment = await storage.getAppointment(appointmentId);
+      const appointment = await storage.getAppointmentById(appointmentId);
       if (!appointment) {
         return res.status(404).json({
           success: false,
