@@ -101,12 +101,13 @@ export function useWebSocket() {
               break;
               
             case 'staff_dashboard_change':
+              console.log('🔔 DEBUG: Recebida notificação staff_dashboard_change:', data);
               // Invalidate staff-specific dashboard data
               queryClient.invalidateQueries({ queryKey: ['/api/staff/dashboard-data'] });
               queryClient.invalidateQueries({ queryKey: ['/api/staff/next-appointment'] });
               queryClient.invalidateQueries({ queryKey: ['/api/dashboard/recent-appointments'] });
               queryClient.invalidateQueries({ queryKey: ['/api/appointments'] });
-              // Log removed for compute optimization
+              console.log('🔔 DEBUG: Queries staff dashboard invalidadas');
               break;
               
             case 'staff_appointment_notification':

@@ -1315,6 +1315,18 @@ export class DatabaseStorage implements IStorage {
           });
           
           console.log(`🔔 DEBUG: Notificação dashboard enviada para establishment ${establishmentId}`);
+          
+          // 3. Notificação específica para o staff do agendamento
+          if (appointment.staffId) {
+            wsManager.notifyStaffDashboardChange(establishmentId, appointment.staffId, {
+              type: 'appointment_completed',
+              appointmentId: id,
+              serviceName: service?.name || 'Serviço',
+              amount: servicePrice
+            });
+            
+            console.log(`🔔 DEBUG: Notificação staff enviada para staff ${appointment.staffId}`);
+          }
         }
       }
     } catch (wsError) {
