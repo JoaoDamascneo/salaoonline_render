@@ -87,13 +87,7 @@ class LembreteScheduler {
         return;
       }
       
-      // Se o lembrete é muito no futuro (> 24 horas), não agendar agora
-      if (delayMs > 24 * 60 * 60 * 1000) {
-        console.log(`⏰ Lembrete para agendamento ${appointmentId} muito no futuro (${Math.floor(delayMs / (1000 * 60 * 60))}h) - não agendar agora`);
-        console.log(`🔍 DEBUG: Saindo da função scheduleLembrete por delayMs > 24h`);
-        return;
-      }
-      
+      // REMOVIDO: Restrição de 24 horas - agora agenda para qualquer data futura
       console.log(`🔍 DEBUG: Passou pelas verificações, agendando lembrete...`);
       
       // Agendar o lembrete
