@@ -59,6 +59,7 @@ class LembreteScheduler {
       this.cancelLembrete(appointmentId);
       
       // Calcular quando o lembrete deve ser enviado (30 minutos antes)
+      // Usar apenas UTC - sem conversões de timezone
       const dataInicio = new Date(appointment.dataInicio || appointment.appointmentDate);
       const lembreteTime = new Date(dataInicio.getTime() - 30 * 60 * 1000);
       const now = new Date();
@@ -67,7 +68,7 @@ class LembreteScheduler {
       console.log(`🔍 DEBUG: lembreteTime = ${lembreteTime.toISOString()}`);
       console.log(`🔍 DEBUG: now = ${now.toISOString()}`);
       
-      // Calcular delay em milissegundos
+      // Calcular delay em milissegundos (comparação direta em UTC)
       const delayMs = lembreteTime.getTime() - now.getTime();
       
       console.log(`🔍 DEBUG: delayMs = ${delayMs} ms (${Math.floor(delayMs / (1000 * 60))} minutos)`);
@@ -81,7 +82,7 @@ class LembreteScheduler {
       
       // Se o lembrete é muito no futuro (> 24 horas), não agendar agora
       if (delayMs > 24 * 60 * 60 * 1000) {
-        console.log(`⏰ Lembrete para agendamento ${appointmentId} muito no futuro (${Math.floor(delayMs / (1000 * 60 * 60))}h) - não agendando agora`);
+        console.log(`⏰ Lembrete para agendamento ${appointmentId} muito no futuro (${Math.floor(delayMs / (1000 * 60 * 60))}h) - não agendar agora`);
         console.log(`🔍 DEBUG: Saindo da função scheduleLembrete por delayMs > 24h`);
         return;
       }
