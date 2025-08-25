@@ -127,24 +127,19 @@ class LembreteScheduler {
       // Se já está agendado, cancelar o anterior
       this.cancelLembrete(appointmentId);
       
-      // O appointmentDate está salvo como horário de São Paulo
+      // O appointmentDate já está salvo em UTC
       const dataInicio = new Date(appointment.dataInicio || appointment.appointmentDate);
       
-      // Converter de São Paulo (UTC-3) para UTC
-      const brazilOffset = -3 * 60 * 60 * 1000; // UTC-3 em milissegundos
-      const dataInicioUTC = new Date(dataInicio.getTime() - brazilOffset);
-      
       // Calcular lembrete em UTC (30 minutos antes)
-      const lembreteTimeUTC = new Date(dataInicioUTC.getTime() - 30 * 60 * 1000);
+      const lembreteTimeUTC = new Date(dataInicio.getTime() - 30 * 60 * 1000);
       
-      // Horário atual em São Paulo (UTC-3)
+      // Horário atual em UTC
       const now = new Date();
-      const nowBrazil = new Date(now.getTime() + brazilOffset);
       
 
       
-      // Calcular delay em milissegundos (comparação em horário de São Paulo)
-      const delayMs = lembreteTimeUTC.getTime() - nowBrazil.getTime();
+      // Calcular delay em milissegundos (comparação em UTC)
+      const delayMs = lembreteTimeUTC.getTime() - now.getTime();
       
 
       
