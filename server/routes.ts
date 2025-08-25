@@ -5521,6 +5521,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const nextAppointments = await storage.getNextUpcomingAppointments(establishment.id);
           
+          // Buscar dados do webhook N8N para este estabelecimento
+          const webhookData = await storage.getN8nWebhookData(establishment.id);
           // Formatar os lembretes para este estabelecimento
           const lembretesEstabelecimento = nextAppointments.map(appointment => ({
             // Informações do Cliente
@@ -5532,6 +5534,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Informações do Estabelecimento
             estabelecimento_nome: appointment.establishmentName,
             estabelecimento_id: appointment.establishmentId,
+            instance_id: webhookData?.instanceId || '',
             
             // Informações do Serviço
             servico_nome: appointment.serviceName,
