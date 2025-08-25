@@ -61,18 +61,20 @@ export function useWebSocket() {
               break;
               
             case 'financial_change':
+              console.log('🔔 DEBUG: Recebida notificação financial_change:', data);
               // Optimized invalidation - only essential queries
               queryClient.invalidateQueries({ queryKey: ['/api/finances/stats'] });
               queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
-              // Log removed for compute optimization
+              console.log('🔔 DEBUG: Queries financeiras invalidadas');
               break;
               
             case 'dashboard_change':
+              console.log('🔔 DEBUG: Recebida notificação dashboard_change:', data);
               // Invalidate dashboard-specific queries
               queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
               queryClient.invalidateQueries({ queryKey: ['/api/dashboard/recent-appointments'] });
               queryClient.invalidateQueries({ queryKey: ['/api/finances/stats'] });
-              // Log removed for compute optimization
+              console.log('🔔 DEBUG: Queries dashboard invalidadas');
               break;
               
             case 'inventory_change':

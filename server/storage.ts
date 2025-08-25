@@ -1290,8 +1290,12 @@ export class DatabaseStorage implements IStorage {
         
         // 2. Se completado, notificar mudanças financeiras
         if (status === "completed" || status === "realizado") {
+          console.log(`🔔 DEBUG: Agendamento ${id} marcado como ${status} - enviando notificações WebSocket`);
+          
           const service = await this.getService(appointment.serviceId, establishmentId);
           const servicePrice = service?.price || 0;
+          
+          console.log(`🔔 DEBUG: Preço do serviço: ${servicePrice}, Nome: ${service?.name}`);
           
           wsManager.notifyFinancialChange(establishmentId, {
             type: 'income_from_appointment',
@@ -1300,12 +1304,16 @@ export class DatabaseStorage implements IStorage {
             serviceName: service?.name || 'Serviço'
           });
           
+          console.log(`🔔 DEBUG: Notificação financeira enviada para establishment ${establishmentId}`);
+          
           wsManager.notifyDashboardStatsChange(establishmentId, {
             type: 'appointment_revenue_update',
             reason: 'appointment_completed',
             appointmentId: id,
             amount: servicePrice
           });
+          
+          console.log(`🔔 DEBUG: Notificação dashboard enviada para establishment ${establishmentId}`);
         }
       }
     } catch (wsError) {
