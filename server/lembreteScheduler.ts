@@ -75,12 +75,14 @@ class LembreteScheduler {
       // Se o lembrete já passou, não agendar
       if (delayMs <= 0) {
         console.log(`⏰ Lembrete para agendamento ${appointmentId} já passou - não agendando`);
+        console.log(`🔍 DEBUG: Saindo da função scheduleLembrete por delayMs <= 0`);
         return;
       }
       
       // Se o lembrete é muito no futuro (> 24 horas), não agendar agora
       if (delayMs > 24 * 60 * 60 * 1000) {
         console.log(`⏰ Lembrete para agendamento ${appointmentId} muito no futuro (${Math.floor(delayMs / (1000 * 60 * 60))}h) - não agendando agora`);
+        console.log(`🔍 DEBUG: Saindo da função scheduleLembrete por delayMs > 24h`);
         return;
       }
       
@@ -88,6 +90,7 @@ class LembreteScheduler {
       
       // Agendar o lembrete
       const timeoutId = setTimeout(async () => {
+        console.log(`🔍 DEBUG: setTimeout executado para agendamento ${appointmentId}`);
         await this.executeLembrete(appointment);
       }, delayMs);
       
@@ -100,6 +103,7 @@ class LembreteScheduler {
       
       console.log(`⏰ Lembrete agendado para agendamento ${appointmentId} em ${Math.floor(delayMs / (1000 * 60))} minutos (${lembreteTime.toLocaleString('pt-BR')})`);
       console.log(`🔍 DEBUG: Total de lembretes agendados: ${this.scheduledLembretes.size}`);
+      console.log(`🔍 DEBUG: Finalizando função scheduleLembrete com sucesso`);
       
     } catch (error) {
       console.error(`❌ Erro ao agendar lembrete para agendamento ${appointment.id}:`, error);
