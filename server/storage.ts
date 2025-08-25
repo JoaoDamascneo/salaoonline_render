@@ -1034,7 +1034,33 @@ export class DatabaseStorage implements IStorage {
     
     // AGENDAR LEMBRETE AUTOMÁTICO PARA 30 MINUTOS ANTES
     try {
-      await this.scheduleLembrete(appointment, client, service, staffMember);
+      // Integrar com o scheduler de lembretes
+      const { lembreteScheduler } = await import("./lembreteScheduler");
+      
+      // Preparar dados do agendamento para o scheduler
+      const appointmentData = {
+        id: appointment.id,
+        clientId: appointment.clientId,
+        clientName: client?.name || 'Cliente',
+        clientPhone: client?.phone || '',
+        clientEmail: client?.email || '',
+        establishmentId: appointment.establishmentId,
+        establishmentName: client?.name || 'Estabelecimento',
+        serviceId: appointment.serviceId,
+        serviceName: service?.name || 'Serviço',
+        servicePrice: service?.price || '0.00',
+        staffId: appointment.staffId,
+        staffName: staffMember?.name || 'Profissional',
+        appointmentDate: appointment.appointmentDate,
+        dataInicio: appointment.appointmentDate,
+        duration: appointment.duration,
+        status: appointment.status,
+        notes: appointment.notes || ''
+      };
+      
+      await lembreteScheduler.scheduleLembrete(appointmentData);
+      console.log(`⏰ Lembrete agendado automaticamente para agendamento ${appointment.id}`);
+      
     } catch (lembreteError) {
       console.error("Erro ao agendar lembrete:", lembreteError);
       // Não falhar a criação do agendamento por erro de lembrete

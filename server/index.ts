@@ -4,6 +4,7 @@ import connectPgSimple from "connect-pg-simple";
 import { pool, initializeDatabase, closeDatabase } from "./db";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { lembreteScheduler } from "./lembreteScheduler";
 
 const app = express();
 
@@ -3286,6 +3287,49 @@ if (app.get("env") === "development") {
 } else {
   serveStatic(app);
 }
+
+// Inicializar o scheduler de lembretes
+try {
+  await lembreteScheduler.initialize();
+  console.log('✅ LembreteScheduler inicializado com sucesso');
+} catch (error) {
+  console.error('❌ Erro ao inicializar LembreteScheduler:', error);
+}
+
+// Endpoints para gerenciar o scheduler de lembretes
+app.get('/webhook/lembrete-scheduler/status', async (req, res) => {
+  try {
+    const status = lembreteScheduler.getStatus();
+    res.json({
+      success: true,
+      scheduler: status,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Erro ao obter status do scheduler:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor'
+    });
+  }
+});
+
+app.post('/webhook/lembrete-scheduler/reload', async (req, res) => {
+  try {
+    await lembreteScheduler.reloadAllLembretes();
+    res.json({
+      success: true,
+      message: 'Scheduler recarregado com sucesso',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Erro ao recarregar scheduler:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor'
+    });
+  }
+});
 
 // ALWAYS serve the app on port 5000
 // this serves both the API and the client.

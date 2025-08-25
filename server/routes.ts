@@ -2648,7 +2648,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           return checkDate >= vacationStart && checkDate <= vacationEnd;
         });
-
+        
         const typeLabels = {
           vacation: 'férias',
           sick_leave: 'atestado médico',
