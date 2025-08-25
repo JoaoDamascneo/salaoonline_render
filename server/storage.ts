@@ -1288,7 +1288,7 @@ export class DatabaseStorage implements IStorage {
           staffId: appointment.staffId
         });
         
-        // 2. Se completado, notificar mudanças financeiras
+        // 2. Se completado, notificar mudanças financeiras (SEMPRE que for marcado como realizado)
         if (status === "completed" || status === "realizado") {
           console.log(`🔔 DEBUG: Agendamento ${id} marcado como ${status} - enviando notificações WebSocket`);
           
@@ -1297,6 +1297,7 @@ export class DatabaseStorage implements IStorage {
           
           console.log(`🔔 DEBUG: Preço do serviço: ${servicePrice}, Nome: ${service?.name}`);
           
+          // SEMPRE notificar quando marcado como realizado (independente do status anterior)
           wsManager.notifyFinancialChange(establishmentId, {
             type: 'income_from_appointment',
             appointmentId: id,

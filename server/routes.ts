@@ -2287,9 +2287,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update the appointment status
       const appointment = await storage.updateAppointmentStatus(id, status, establishmentId);
       
-      // If status changed from "scheduled"/"agendado" to "completed"/"realizado", create financial transaction
-      if ((currentAppointment.status === "scheduled" || currentAppointment.status === "agendado") && 
-          (status === "completed" || status === "realizado")) {
+      // If status changed to "completed"/"realizado", create financial transaction (independente do status anterior)
+      if (status === "completed" || status === "realizado") {
                 // Status change detection logging removed for compute optimization
         try {
           // Get establishment ID from user context
