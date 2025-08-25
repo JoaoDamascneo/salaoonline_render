@@ -9,7 +9,7 @@ interface ScheduledLembrete {
 class LembreteScheduler {
   private scheduledLembretes: Map<number, ScheduledLembrete> = new Map();
   private isInitialized = false;
-  private nextReavaliacaoTimeout: NodeJS.Timeout | null = null;
+  private pollingInterval: NodeJS.Timeout | null = null;
 
   // Inicializar o scheduler
   async initialize() {
@@ -18,15 +18,11 @@ class LembreteScheduler {
     console.log('🚀 Inicializando LembreteScheduler...');
     
     try {
-      // Buscar todos os estabelecimentos
-      const establishments = await storage.getAllEstablishments();
+      // Executar primeira busca imediatamente
+      await this.executarCicloPolling();
       
-      for (const establishment of establishments) {
-        await this.scheduleLembretesForEstablishment(establishment.id);
-      }
-      
-      // Agendar primeira reavaliação para agendamentos futuros
-      this.agendarProximaReavaliacao();
+      // Iniciar polling a cada 20 dias
+      this.iniciarPolling20Dias();
       
       this.isInitialized = true;
       console.log('✅ LembreteScheduler inicializado com sucesso');
@@ -36,53 +32,60 @@ class LembreteScheduler {
     }
   }
 
-  // Agendar próxima reavaliação sem polling
-  private agendarProximaReavaliacao() {
-    // Cancelar reavaliação anterior se existir
-    if (this.nextReavaliacaoTimeout) {
-      clearTimeout(this.nextReavaliacaoTimeout);
-    }
+  // Iniciar polling a cada 20 dias
+  private iniciarPolling20Dias() {
+    const vinteDiasEmMs = 20 * 24 * 60 * 60 * 1000; // 20 dias em milissegundos
     
-    // Reavaliar em 1 hora
-    this.nextReavaliacaoTimeout = setTimeout(async () => {
+    this.pollingInterval = setInterval(async () => {
       try {
-        console.log('🔄 Reavaliando agendamentos futuros (sem polling)...');
-        await this.reavaliarAgendamentosFuturos();
-        
-        // Agendar próxima reavaliação
-        this.agendarProximaReavaliacao();
+        console.log('🔄 Executando ciclo de polling (20 dias)...');
+        await this.executarCicloPolling();
       } catch (error) {
-        console.error('❌ Erro na reavaliação:', error);
-        // Tentar novamente em 1 hora mesmo com erro
-        this.agendarProximaReavaliacao();
+        console.error('❌ Erro no ciclo de polling:', error);
       }
-    }, 3600000); // 1 hora
+    }, vinteDiasEmMs);
     
-    console.log('⏰ Próxima reavaliação agendada para 1 hora (sem polling)');
+    console.log(`⏰ Polling iniciado - próximo ciclo em 20 dias (${new Date(Date.now() + vinteDiasEmMs).toLocaleString('pt-BR')})`);
   }
 
-  // Reavaliar agendamentos futuros
-  private async reavaliarAgendamentosFuturos() {
+  // Executar ciclo de polling
+  private async executarCicloPolling() {
     try {
+      console.log('📅 Buscando agendamentos dos próximos 20 dias...');
+      
       const establishments = await storage.getAllEstablishments();
       
       for (const establishment of establishments) {
-        const appointments = await storage.getNextUpcomingAppointments(establishment.id);
-        
-        for (const appointment of appointments) {
-          // Verificar se já está agendado
-          if (!this.scheduledLembretes.has(appointment.id)) {
-            // Tentar agendar novamente
-            await this.scheduleLembrete(appointment);
-          }
-        }
+        await this.buscarEAgenarLembretes20Dias(establishment.id);
       }
       
-      console.log('✅ Reavaliação de agendamentos futuros concluída');
+      console.log('✅ Ciclo de polling concluído');
     } catch (error) {
-      console.error('❌ Erro ao reavaliar agendamentos futuros:', error);
+      console.error('❌ Erro ao executar ciclo de polling:', error);
     }
   }
+
+  // Buscar e agendar lembretes para os próximos 20 dias
+  private async buscarEAgenarLembretes20Dias(establishmentId: number) {
+    try {
+      console.log(`🔍 Buscando agendamentos futuros para estabelecimento ${establishmentId}...`);
+      
+      // Buscar agendamentos futuros (método existente)
+      const appointments = await storage.getNextUpcomingAppointments(establishmentId);
+      
+      console.log(`📋 Encontrados ${appointments.length} agendamentos futuros`);
+      
+      for (const appointment of appointments) {
+        // Tentar agendar lembrete (só agenda se delay <= 24,8 dias)
+        await this.scheduleLembrete(appointment);
+      }
+      
+    } catch (error) {
+      console.error(`❌ Erro ao buscar agendamentos para estabelecimento ${establishmentId}:`, error);
+    }
+  }
+
+
 
   // Agendar lembretes para um estabelecimento específico
   async scheduleLembretesForEstablishment(establishmentId: number) {
@@ -253,10 +256,12 @@ class LembreteScheduler {
     });
     this.scheduledLembretes.clear();
     
-    // Parar reavaliação
-    if (this.nextReavaliacaoTimeout) {
-      clearTimeout(this.nextReavaliacaoTimeout);
-      this.nextReavaliacaoTimeout = null;
+
+    
+    // Parar polling
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+      this.pollingInterval = null;
     }
     
     console.log('❌ Todos os lembretes cancelados e reavaliação parada');
