@@ -132,12 +132,16 @@ class LembreteScheduler {
       
       // Calcular lembrete em UTC (30 minutos antes)
       const lembreteTimeUTC = new Date(dataInicio.getTime() - 30 * 60 * 1000);
+      
+      // Horário atual em São Paulo (UTC-3)
       const now = new Date();
+      const brazilOffset = -3 * 60 * 60 * 1000; // UTC-3 em milissegundos
+      const nowBrazil = new Date(now.getTime() + brazilOffset);
       
 
       
-      // Calcular delay em milissegundos (comparação em UTC)
-      const delayMs = lembreteTimeUTC.getTime() - now.getTime();
+      // Calcular delay em milissegundos (comparação em horário de São Paulo)
+      const delayMs = lembreteTimeUTC.getTime() - nowBrazil.getTime();
       
 
       
