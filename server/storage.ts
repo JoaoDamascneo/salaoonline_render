@@ -1705,8 +1705,8 @@ export class DatabaseStorage implements IStorage {
       // Use current date for dashboard stats (not date ranges that can cause timezone issues)
       const dashboardStats = await db.execute(
         sql`SELECT 
-          COALESCE(SUM(CASE WHEN type = 'income' AND DATE(created_at) = CURRENT_DATE THEN amount::decimal ELSE 0 END), 0) as todays_revenue,
-          COUNT(CASE WHEN DATE(created_at) = CURRENT_DATE THEN 1 END) as todays_appointments_count
+          COALESCE(SUM(CASE WHEN type = 'income' AND DATE(transaction_date) = CURRENT_DATE THEN amount::decimal ELSE 0 END), 0) as todays_revenue,
+          COUNT(CASE WHEN DATE(transaction_date) = CURRENT_DATE THEN 1 END) as todays_appointments_count
         FROM transactions 
         WHERE establishment_id = ${establishmentId}`
       );

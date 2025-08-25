@@ -34,18 +34,34 @@ class LembreteScheduler {
 
   // Iniciar polling a cada 20 dias
   private iniciarPolling20Dias() {
+    // Primeiro polling em 1 dia para não perder agendamentos
+    const primeiroPollingEmMs = 24 * 60 * 60 * 1000; // 1 dia em milissegundos
     const vinteDiasEmMs = 20 * 24 * 60 * 60 * 1000; // 20 dias em milissegundos
     
-    this.pollingInterval = setInterval(async () => {
+    // Primeiro polling em 1 dia
+    setTimeout(async () => {
       try {
-        console.log('🔄 Executando ciclo de polling (20 dias)...');
+        console.log('🔄 Executando primeiro ciclo de polling (1 dia)...');
         await this.executarCicloPolling();
+        
+        // Após o primeiro, iniciar polling a cada 20 dias
+        this.pollingInterval = setInterval(async () => {
+          try {
+            console.log('🔄 Executando ciclo de polling (20 dias)...');
+            await this.executarCicloPolling();
+          } catch (error) {
+            console.error('❌ Erro no ciclo de polling:', error);
+          }
+        }, vinteDiasEmMs);
+        
+        console.log(`⏰ Polling de 20 dias iniciado - próximo ciclo em 20 dias (${new Date(Date.now() + vinteDiasEmMs).toLocaleString('pt-BR')})`);
+        
       } catch (error) {
-        console.error('❌ Erro no ciclo de polling:', error);
+        console.error('❌ Erro no primeiro ciclo de polling:', error);
       }
-    }, vinteDiasEmMs);
+    }, primeiroPollingEmMs);
     
-    console.log(`⏰ Polling iniciado - próximo ciclo em 20 dias (${new Date(Date.now() + vinteDiasEmMs).toLocaleString('pt-BR')})`);
+    console.log(`⏰ Primeiro polling agendado para 1 dia (${new Date(Date.now() + primeiroPollingEmMs).toLocaleString('pt-BR')})`);
   }
 
   // Executar ciclo de polling
