@@ -6685,6 +6685,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint para testar horário do sistema
+  app.get("/webhook/teste-horario", async (req, res) => {
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      
+      const now = new Date();
+      
+      res.json({
+        success: true,
+        horario_sistema: {
+          // Horário UTC (padrão do servidor)
+          utc_iso: now.toISOString(),
+          utc_string: now.toUTCString(),
+          utc_timestamp: now.getTime(),
+          
+          // Horário local do servidor
+          local_iso: now.toLocaleString("en-US", {timeZone: "UTC"}),
+          local_string: now.toString(),
+          
+          // Horário Brasil (UTC-3)
+          brazil_iso: now.toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"}),
+          brazil_utc_offset: now.getTimezoneOffset(),
+          
+          // Teste de conversão manual UTC-3
+          manual_utc_minus_3: new Date(now.getTime() - 3 * 60 * 60 * 1000).toISOString(),
+          manual_utc_minus_3_string: new Date(now.getTime() - 3 * 60 * 60 * 1000).toLocaleString("pt-BR")
+        },
+        timezone_info: {
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          offset_minutes: now.getTimezoneOffset(),
+          offset_hours: now.getTimezoneOffset() / 60
+        }
+      });
+      
+    } catch (error) {
+      console.error("Erro ao testar horário:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor",
+        message: error instanceof Error ? error.message : "Erro desconhecido"
+      });
+    }
+  });
+
   // Endpoint para reagendar lembretes do dia atual
   app.post("/webhook/reagendar-lembretes-hoje", async (req, res) => {
     try {
@@ -6697,54 +6742,4 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         success: true,
-        message: "Reagendamento de lembretes iniciado com sucesso",
-        timestamp: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error("Erro ao reagendar lembretes:", error);
-      res.status(500).json({
-        success: false,
-        error: "Erro interno do servidor",
-        message: error instanceof Error ? error.message : "Erro desconhecido"
-      });
-    }
-  });
-
-
-
-  // Executar migração para adicionar campo lembrete_enviado (temporário)
-  app.post("/webhook/execute-migration", async (req, res) => {
-    try {
-      res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      
-      console.log("🔄 Executando migração para adicionar campo lembrete_enviado...");
-      
-      // Executar a migração SQL
-      await db.execute(sql`ALTER TABLE "appointments" ADD COLUMN IF NOT EXISTS "lembrete_enviado" boolean DEFAULT false`);
-      
-      res.json({
-        success: true,
-        message: "Migração executada com sucesso - campo lembrete_enviado adicionado",
-        timestamp: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error("Erro ao executar migração:", error);
-      res.status(500).json({
-        success: false,
-        error: "Erro interno do servidor",
-        message: error instanceof Error ? error.message : "Erro desconhecido"
-      });
-    }
-  });
-
-  const httpServer = createServer(app);
-  
-  // Initialize WebSocket server
-  const { initializeWebSocket } = await import("./websocket");
-  initializeWebSocket(httpServer);
-  
-  return httpServer;
-}
+        message: "Reagendamento de lembretes
