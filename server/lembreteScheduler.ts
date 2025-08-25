@@ -58,18 +58,25 @@ class LembreteScheduler {
       // Se já está agendado, cancelar o anterior
       this.cancelLembrete(appointmentId);
       
-      // Calcular quando o lembrete deve ser enviado (30 minutos antes)
-      // Usar apenas UTC - sem conversões de timezone
+      // O appointmentDate está salvo como horário local de São Paulo
+      // Precisamos converter para UTC para comparação correta
       const dataInicio = new Date(appointment.dataInicio || appointment.appointmentDate);
-      const lembreteTime = new Date(dataInicio.getTime() - 30 * 60 * 1000);
+      
+      // Converter de São Paulo (UTC-3) para UTC
+      const brazilOffset = -3 * 60 * 60 * 1000; // UTC-3 em milissegundos
+      const dataInicioUTC = new Date(dataInicio.getTime() - brazilOffset);
+      
+      // Calcular lembrete em UTC (30 minutos antes)
+      const lembreteTimeUTC = new Date(dataInicioUTC.getTime() - 30 * 60 * 1000);
       const now = new Date();
       
-      console.log(`🔍 DEBUG: dataInicio = ${dataInicio.toISOString()}`);
-      console.log(`🔍 DEBUG: lembreteTime = ${lembreteTime.toISOString()}`);
+      console.log(`🔍 DEBUG: dataInicio (local) = ${dataInicio.toISOString()}`);
+      console.log(`🔍 DEBUG: dataInicioUTC = ${dataInicioUTC.toISOString()}`);
+      console.log(`🔍 DEBUG: lembreteTimeUTC = ${lembreteTimeUTC.toISOString()}`);
       console.log(`🔍 DEBUG: now = ${now.toISOString()}`);
       
-      // Calcular delay em milissegundos (comparação direta em UTC)
-      const delayMs = lembreteTime.getTime() - now.getTime();
+      // Calcular delay em milissegundos (comparação em UTC)
+      const delayMs = lembreteTimeUTC.getTime() - now.getTime();
       
       console.log(`🔍 DEBUG: delayMs = ${delayMs} ms (${Math.floor(delayMs / (1000 * 60))} minutos)`);
       
@@ -99,10 +106,10 @@ class LembreteScheduler {
       this.scheduledLembretes.set(appointmentId, {
         appointmentId,
         timeoutId,
-        scheduledTime: lembreteTime
+        scheduledTime: lembreteTimeUTC
       });
       
-      console.log(`⏰ Lembrete agendado para agendamento ${appointmentId} em ${Math.floor(delayMs / (1000 * 60))} minutos (${lembreteTime.toLocaleString('pt-BR')})`);
+      console.log(`⏰ Lembrete agendado para agendamento ${appointmentId} em ${Math.floor(delayMs / (1000 * 60))} minutos (${lembreteTimeUTC.toLocaleString('pt-BR')})`);
       console.log(`🔍 DEBUG: Total de lembretes agendados: ${this.scheduledLembretes.size}`);
       console.log(`🔍 DEBUG: Finalizando função scheduleLembrete com sucesso`);
       
